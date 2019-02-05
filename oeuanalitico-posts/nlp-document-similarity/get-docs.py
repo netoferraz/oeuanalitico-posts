@@ -23,21 +23,4 @@ sections = [
     'refino'
 ]
 
-
 [post_request(categoria) for categoria in sections]
-
-"""
-for categoria in sections:
-    payload = {
-        'tema': f"{categoria}",
-        "cmbMes": "" ,
-        "cmbAno" : "",
-        "buscageral" : "1"
-        }
-    session = requests.Session()
-    post = session.post(BASE_URL, 
-                        headers=HEADERS, 
-                        data=payload, 
-                        allow_redirects=True)
-    parse_leg(post)
-"""

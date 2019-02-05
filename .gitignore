@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#nlp-document-similarity
+/oeuanalitico-posts/nlp-document-similarity/data/
+
+#vscode
+.vscode
