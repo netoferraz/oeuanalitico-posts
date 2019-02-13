@@ -108,3 +108,15 @@ venv.bak/
 
 #vscode
 .vscode
+#nfe project
+/oeuanalitico-posts/nfe/authentication/*.json
+/oeuanalitico-posts/nfe/authentication/*.txt
+/oeuanalitico-posts/nfe/data
+/oeuanalitico-posts/nfe/data-storage
+/oeuanalitico-posts/nfe/db
+/oeuanalitico-posts/nfe/logs
+/oeuanalitico-posts/nfe/nfe-html
+/oeuanalitico-posts/nfe/notebooks
+/oeuanalitico-posts/nfe/tabular-data
+/oeunalitico-posts/nfe/*.env
+
