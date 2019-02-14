@@ -1,15 +1,13 @@
-import sys
-sys.path.append("./pre-processing")
-from functions import convert_to_numeric
+from preprocessing.functions import convert_to_numeric
+from preprocessing.dataClass import NotaFiscal, Emitente, Destinatario, Produto
+from preprocessing.schema import v_nfe, v_em, v_dest, v_prod
 import lxml.html as lh
 import pickle
-from dataClass import NotaFiscal, Emitente, Destinatario, Produto
 import os
 import datetime
 import time
 import argparse
 import re
-from schema import v_nfe, v_em, v_dest, v_prod
 
 parser = argparse.ArgumentParser(description='Parser de arquivos .html em .pkl')
 parser.add_argument("pathname", help="Diretório onde estão localizados os arquivos .html", type=str)
@@ -29,14 +27,14 @@ def parserNfeHtmlFiles(pathname):
             html = lh.fromstring("".join(pgsrc))
             #coleta o index do último hífen da string
             filename_chave_index = filename.rindex('_')
-            filename_chave = filename[filename_chave_index+1:] 
+            filename_chave = filename[filename_chave_index+1:]
             percentual = round((index_file+1)/len(list_files)*100,2)
             print(f"Iniciando o parser do arquivo {filename} @ status: {percentual}%")
             #COLETAR DADOS DA NOTA FISCAL
             for feature in html.xpath('//span[contains(@class, "TextoFundoBrancoNegrito")]'):
                 if feature.text_content().strip() == 'Chave de Acesso:':
                     checkPointNfe = feature
-            
+
             tabelaNfe = checkPointNfe.getparent().getparent().getparent().getparent()
 
             for dadoNfe in tabelaNfe:
@@ -125,17 +123,17 @@ def parserNfeHtmlFiles(pathname):
                             vendor = Emitente(rz.text_content().strip())
                         else:
                             vendor = Emitente(rz.getnext().text_content().strip())
-                    elif desc.text_content() == 'Nome Fantasia': 
+                    elif desc.text_content() == 'Nome Fantasia':
                         nome_fantasia = desc.getnext()
                         if not 'br' in nome_fantasia.tag:
                             vendor.nome_fantasia = nome_fantasia.text_content().strip()
                         else:
                             vendor.nome_fantasia = nome_fantasia.getnext().text_content().strip()
-                    elif desc.text_content() == 'CNPJ': 
+                    elif desc.text_content() == 'CNPJ':
                         cnpj = desc.getnext()
                         if not 'br' in cnpj.tag:
                             vendor.cnpj = cnpj.text_content().strip()
-                        else: 
+                        else:
                             vendor.cnpj = cnpj.getnext().text_content().strip()
                     elif desc.text_content() == 'Endereço':
                         endereco = desc.getnext()
@@ -210,11 +208,11 @@ def parserNfeHtmlFiles(pathname):
                                 dest = Destinatario(rz.getnext().text_content().strip())
                         except AttributeError:
                             continue
-                    elif desc.text_content() == 'CPF': 
+                    elif desc.text_content() == 'CPF':
                         cpf = desc.getnext()
                         if not 'br' in cpf.tag:
                             dest.cpf = cpf.text_content().strip()
-                        else: 
+                        else:
                             dest.cpf = cpf.getnext().text_content().strip()
                     elif desc.text_content() == 'Endereço':
                         endereco = desc.getnext()
@@ -364,14 +362,14 @@ def parserNfeHtmlFiles(pathname):
                                     prod.unidade_trib = unidade_tributavel
                     except TypeError:
                         pass
-            
+
             dataAgg = {
                 'nfe_data' : inputDataNfe,
                 'produtos' :lista_produtos,
                 'emissor' : vendor,
                 'dest' : dest
                 }
-            
+
             #VALIDAÇÃO DADOS NOTA FISCAL
             nfe_data_validate = {
                 'chave' : inputDataNfe.chave,
@@ -391,7 +389,7 @@ def parserNfeHtmlFiles(pathname):
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
                 dataAgg['nfe_data'] = nfe_data_validate
-            
+
             #VALIDAÇÃO DADOS EMISSOR NOTA FISCAL
             em_data_validate = {
                 'razaoSocial' : vendor.razaoSocial,
@@ -430,7 +428,7 @@ def parserNfeHtmlFiles(pathname):
                 'uf' : dest.uf,
                 'pais' : dest.pais,
                 'inscricao_estadual' : dest.inscricao_estadual,
-                'email' : dest.email   
+                'email' : dest.email
             }
 
             if not v_dest.validate(dest_data_validate):
@@ -441,7 +439,7 @@ def parserNfeHtmlFiles(pathname):
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
                 dataAgg['dest'] = dest_data_validate
-            
+
             #CRIA UMA LISTA PARA RECEBER OS OBJETOS VALIDADOS
             validate_prod_list = []
             for produto in lista_produtos:
@@ -463,15 +461,15 @@ def parserNfeHtmlFiles(pathname):
                 if not v_prod.validate(prod_data_validate):
                     with open('./logs/validation_log.txt', 'a', encoding='ISO-8859-15') as f:
                         for feature, error in v_prod.errors.items():
-                            f.write(f"{inputDataNfe.chave}; \"produto\"; {feature}; {prod_data_validate[feature]}; {error}; {datetime.datetime.now()}\n")        
+                            f.write(f"{inputDataNfe.chave}; \"produto\"; {feature}; {prod_data_validate[feature]}; {error}; {datetime.datetime.now()}\n")
                         #print(v_prod.errors)
                 else:
                     #NA NEGATIVA DE ERRO, COLETA O OBJETO
                     validate_prod_list.append(prod_data_validate)
 
             #ADICIONA A LISTA DE PRODUTOS VALIDADA
-            dataAgg['produtos'] = validate_prod_list            
-            
+            dataAgg['produtos'] = validate_prod_list
+
             timestamp = datetime.datetime.now()
             str_date = timestamp.strftime("%Y_%m_%d")
             year = timestamp.year
