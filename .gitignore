@@ -114,7 +114,7 @@ venv.bak/
 /oeuanalitico-posts/nfe/data
 /oeuanalitico-posts/nfe/data-storage
 /oeuanalitico-posts/nfe/db
-/oeuanalitico-posts/nfe/logs
+/oeuanalitico-posts/nfe/logs/*.log
 /oeuanalitico-posts/nfe/nfe-html
 /oeuanalitico-posts/nfe/notebooks
 /oeuanalitico-posts/nfe/tabular-data
