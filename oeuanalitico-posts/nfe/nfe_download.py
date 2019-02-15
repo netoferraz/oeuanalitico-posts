@@ -27,7 +27,7 @@ def downloadNfe(pathtosave):
     if pathtosave in listpath:
         pass
     else:
-        os.mkdir(BASE_PATH, pathtosave)
+        os.mkdir(os.path.join(BASE_PATH, pathtosave))
     webdriver_path = os.getenv("WEBDRIVER_FIREFOX")
     options = webdriver.FirefoxOptions()
     options.add_argument('--headless')
@@ -55,7 +55,7 @@ def downloadNfe(pathtosave):
                     driver.close()
                 continue
             else:
-                logger_get_html.info(f"Iniciando parser da chave {chave}")
+                logger_get_html.debug(f"Iniciando parser da chave {chave}")
         except AttributeError as error:
             driver.close()
             logger_get_html.critical(f"[{error}];{chave};{url};Não foi possível identificar chave.")
@@ -63,12 +63,12 @@ def downloadNfe(pathtosave):
         # acessa o link
         try:
             driver.get(url)
-        except TimeoutException as e:
+        except TimeoutException as error:
             logger_get_html.error(f"[{error}];{chave};{url};ERRO NO GET.")
             continue
         try:
             driver.find_element_by_css_selector("a.botoes:nth-child(2)").click()
-        except NoSuchElementException:
+        except NoSuchElementException as error:
             logger_get_html.error(f"[{error}];{chave};{url};Item ausente.")
             driver.close()
             continue
@@ -122,13 +122,13 @@ def downloadNfe(pathtosave):
         with open(filepath + "/" + filename, 'w') as f:
             f.write(page_source)
         logger_get_html.info(f"[NA];{chave};{url};Download concluído.")
-        logger_get_html.info(f"NFe: {chave} ----> {index+1}/{len(urls)} @ {round((index+1)/len(urls)*100,2)}% concluído.")
-        logger_get_html.info(f"Download concluído: {time.strftime(" % H: % M: % S")}\n.")
+        logger_get_html.debug(f"NFe: {chave} ----> {index+1}/{len(urls)} @ {round((index+1)/len(urls)*100,2)}% concluído.")
+        logger_get_html.debug(f"Download concluído: {time.strftime('%H:%M:%S')}.\n")
         for window in driver.window_handles:
             driver.switch_to.window(window)
             driver.close()
     timeM = round((time.time() - start_time) / 60, 3)
-    logger_get_html.info(f"Tempo de execução foi de {timeM} minutos")
+    logger_get_html.debug(f"Tempo de execução foi de {timeM} minutos")
 
 
 if __name__ == "__main__":

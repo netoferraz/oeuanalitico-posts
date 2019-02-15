@@ -1,25 +1,27 @@
 import lxml.html as lh
 import pickle
-from dataClass import NotaFiscal, Emitente, Destinatario, Produto
+from preprocessing.dataClass import NotaFiscal, Emitente, Destinatario, Produto
 import os
 import datetime
 import re
 
-pathname = "2018-03-03"
+pathname = "2019-02-12"
 #filename = '2018_2_3_s0_8_56_NFE_53180124285640000153650060001034991374277109.html'
-filename = "2018_2_3_0_9_0_NFE_53180124285640000153650080001303091235168480.html"
-filename_chave_index = filename.rindex('_')
-filename_chave = filename[filename_chave_index+1:] 
+filename = "53170845543915000343650710000021461139922302.html"
+#filename_chave_index = filename.rindex('_')
+#filename_chave = filename[filename_chave_index+1:]
+filename_chave = filename
 fullpath = os.path.join(os.getcwd(), 'nfe-html', pathname)
-with open(os.path.join(fullpath, filename), 'r', encoding='utf-8') as f:
+with open(os.path.join(fullpath, filename), 'r', encoding='latin1') as f:
+    #import pdb; pdb.set_trace()
     pgsrc = f.readlines()
     html = lh.fromstring("".join(pgsrc))
-    
+
     #COLETAR DADOS DA NOTA FISCAL
     for feature in html.xpath('//span[contains(@class, "TextoFundoBrancoNegrito")]'):
         if feature.text_content().strip() == 'Chave de Acesso:':
             checkPointNfe = feature
-    
+
     tabelaNfe = checkPointNfe.getparent().getparent().getparent().getparent()
 
     for dadoNfe in tabelaNfe:
@@ -108,17 +110,17 @@ with open(os.path.join(fullpath, filename), 'r', encoding='utf-8') as f:
                     vendor = Emitente(rz.text_content().strip())
                 else:
                     vendor = Emitente(rz.getnext().text_content().strip())
-            elif desc.text_content() == 'Nome Fantasia': 
+            elif desc.text_content() == 'Nome Fantasia':
                 nome_fantasia = desc.getnext()
                 if not 'br' in nome_fantasia.tag:
                     vendor.nome_fantasia = nome_fantasia.text_content().strip()
                 else:
                     vendor.nome_fantasia = nome_fantasia.getnext().text_content().strip()
-            elif desc.text_content() == 'CNPJ': 
+            elif desc.text_content() == 'CNPJ':
                 cnpj = desc.getnext()
                 if not 'br' in cnpj.tag:
                     vendor.cnpj = cnpj.text_content().strip()
-                else: 
+                else:
                     vendor.cnpj = cnpj.getnext().text_content().strip()
             elif desc.text_content() == 'Endereço':
                 endereco = desc.getnext()
@@ -193,11 +195,11 @@ with open(os.path.join(fullpath, filename), 'r', encoding='utf-8') as f:
                         dest = Destinatario(rz.getnext().text_content().strip())
                 except AttributeError:
                     continue
-            elif desc.text_content() == 'CPF': 
+            elif desc.text_content() == 'CPF':
                 cpf = desc.getnext()
                 if not 'br' in cpf.tag:
                     dest.cpf = cpf.text_content().strip()
-                else: 
+                else:
                     dest.cpf = cpf.getnext().text_content().strip()
             elif desc.text_content() == 'Endereço':
                 endereco = desc.getnext()
@@ -344,5 +346,5 @@ with open(os.path.join(fullpath, filename), 'r', encoding='utf-8') as f:
                             unidade_tributavel = unidade_trib.text_content().strip()
                             prod.unidade_trib = unidade_tributavel
             except TypeError:
-                pass                             
-                                
+                pass
+
