@@ -2,6 +2,7 @@ from preprocessing.functions import convert_to_numeric
 from preprocessing.dataClass import NotaFiscal, Emitente, Destinatario, Produto
 from preprocessing.schema import v_nfe, v_em, v_dest, v_prod
 import lxml.html as lh
+from logs.logger import logger_parser
 import pickle
 import os
 import datetime
@@ -22,14 +23,15 @@ def parserNfeHtmlFiles(pathname):
     #filtra apenas os arquivos com extensão .html
     list_files = [html for html in list_folder if '.html' in html]
     for index_file, filename in enumerate(list_files):
-        with open(os.path.join(fullpath, filename), 'r', encoding='utf-8') as f:
+        with open(os.path.join(fullpath, filename), 'r', encoding='latin1') as f:
             pgsrc = f.readlines()
             html = lh.fromstring("".join(pgsrc))
             #coleta o index do último hífen da string
-            filename_chave_index = filename.rindex('_')
-            filename_chave = filename[filename_chave_index+1:]
+            #filename_chave_index = filename.rindex('_')
+            #filename_chave = filename[filename_chave_index+1:]
+            filename_chave = filename[:-5]
             percentual = round((index_file+1)/len(list_files)*100,2)
-            print(f"Iniciando o parser do arquivo {filename} @ status: {percentual}%")
+            logger_parser.debug(f"Iniciando o parser do arquivo {filename} @ status: {percentual}%")
             #COLETAR DADOS DA NOTA FISCAL
             for feature in html.xpath('//span[contains(@class, "TextoFundoBrancoNegrito")]'):
                 if feature.text_content().strip() == 'Chave de Acesso:':
@@ -49,27 +51,28 @@ def parserNfeHtmlFiles(pathname):
                                 inputDataNfe = NotaFiscal(chaveNfe.getnext().text_content().strip())
                             try:
                                 assert len(inputDataNfe.chave) == 59
-                            except AssertionError:
-                                with open('./logs/html_parser_logs.csv', 'a') as r:
-                                    r.write(f"{filename_chave}; NFe; chave; feature não possui 59 caracteres; {datetime.datetime.now()}\n")
+                            except AssertionError as error:
+                                logger_parser.critical(f"{filename_chave};{erro};elemento não possui 59 caracteres")
                     #NÚMERO DA NOTA FISCAL
                     elif desc.text_content().strip() == 'Número NF-e:':
                         numeroNfe = desc.getnext()
                         if not 'br' in numeroNfe.tag:
                             try:
                                 inputDataNfe.numero = int(numeroNfe.text_content().strip())
-                            except ValueError:
-                                with open('./logs/html_parser_logs.csv', 'a') as r:
-                                    r.write(f"{filename_chave}; NFe; numero; feature coletada não é INT; {datetime.datetime.now()}\n")
+                            except ValueError as error:
+                                logger_parser.critical(f"{filename_chave};{error};feature coletada não é INT;")
                         else:
                             try:
                                 inputDataNfe.numero = int(numeroNfe.getnext().text_content().strip())
-                            except ValueError:
-                                with open('./logs/html_parser_logs.csv', 'a') as r:
-                                    r.write(f"{filename_chave}; NFe; numero; feature coletada não é INT; {datetime.datetime.now()}\n")
+                            except ValueError as error:
+                                logger_parser.critical(f"{filename_chave};{error};feature coletada não é INT;")
 
             #nfe_data_element = html.xpath('//*[@id="NFe"]')[0]
-            nfe_data_element = html.xpath("/html/body/table/tbody/tr/td/table[3]")[0]
+            try:
+                nfe_data_element = html.xpath("/html/body/table/tbody/tr/td/table[3]")[0]
+            except IndexError as error:
+                logger_parser.critical(f"{filename_chave};{error};Não foi possível encontrar tabela com dados da NFE.")
+                continue
             for dadoNfe in nfe_data_element:
                 for desc in dadoNfe.iterdescendants():
                     if desc.text_content().strip() == 'Data de Emissão':
@@ -206,7 +209,8 @@ def parserNfeHtmlFiles(pathname):
                                 dest = Destinatario(rz.text_content().strip())
                             else:
                                 dest = Destinatario(rz.getnext().text_content().strip())
-                        except AttributeError:
+                        except AttributeError as error:
+                            logger_parser.error(f"{filename_chave};{error};Nome Destinatario")
                             continue
                     elif desc.text_content() == 'CPF':
                         cpf = desc.getnext()
@@ -323,7 +327,8 @@ def parserNfeHtmlFiles(pathname):
                                         if "br" in value.tag:
                                             valor = value.getnext().text_content().strip()
                                             prod.valor = convert_to_numeric(valor)
-                    except TypeError:
+                    except TypeError as error:
+                        #logger_parser.debug(f"{filename_chave};{error};Dados Produto;")
                         pass
                 for morefeature in nextTable:
                     try:
@@ -346,7 +351,8 @@ def parserNfeHtmlFiles(pathname):
                                     try:
                                         ean_cmc = int(cd_ean_cmc.text_content().strip())
                                         prod.codigo_ean_comercial = ean_cmc
-                                    except ValueError:
+                                    except ValueError as error:
+                                        logger_parser.error(f"{filename_chave};{error};Dados Produto - {cd_ean_cmc.text_content().strip()} - {type(cd_ean_cmc.text_content().strip())}")
                                         pass
                                 elif desc.text_content().strip() == 'Valor Unitário de Comercialização':
                                     valor_unit_cmc = desc.getnext()
@@ -360,7 +366,8 @@ def parserNfeHtmlFiles(pathname):
                                     unidade_trib = desc.getnext()
                                     unidade_tributavel = unidade_trib.text_content().strip()
                                     prod.unidade_trib = unidade_tributavel
-                    except TypeError:
+                    except TypeError as error:
+                        #logger_parser.debug(f"{filename_chave};{error};Dados Produto;")
                         pass
 
             dataAgg = {
@@ -382,9 +389,8 @@ def parserNfeHtmlFiles(pathname):
             }
 
             if not v_nfe.validate(nfe_data_validate):
-                with open("./logs/validation_log.txt", "a", encoding="ISO-8859-15") as f:
-                    for feature, error in v_nfe.errors.items():
-                            f.write(f"{nfe_data_validate['chave']}; \"nfe\"; {feature}; {nfe_data_validate[feature]}; {error}; {datetime.datetime.now()}\n")
+                for feature, error in v_nfe.errors.items():
+                        logger_parser.error(f"{nfe_data_validate['chave']}; \"nfe\"; {feature}; {nfe_data_validate[feature]};{error}")
                 #print(v_nfe.errors)
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
@@ -408,9 +414,8 @@ def parserNfeHtmlFiles(pathname):
             }
 
             if not v_em.validate(em_data_validate):
-                with open('./logs/validation_log.txt', 'a', encoding='ISO-8859-15') as f:
-                    for feature, error in v_em.errors.items():
-                            f.write(f"{inputDataNfe.chave}; \"emissor\"; {feature}; {em_data_validate[feature]}; {error}; {datetime.datetime.now()}\n")
+                for feature, error in v_em.errors.items():
+                        logger_parser.error(f"{inputDataNfe.chave};\"emissor\";{feature};{em_data_validate[feature]};{error}")
                 #print(v_em.errors)
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
@@ -432,9 +437,8 @@ def parserNfeHtmlFiles(pathname):
             }
 
             if not v_dest.validate(dest_data_validate):
-                with open('./logs/validation_log.txt', 'a', encoding='ISO-8859-15') as f:
-                    for feature, error in v_dest.errors.items():
-                        f.write(f"{inputDataNfe.chave}; \"destinatario\"; {feature}; {dest_data_validate[feature]}; {error}; {datetime.datetime.now()}\n")
+                for feature, error in v_dest.errors.items():
+                    logger_parser.error(f"{inputDataNfe.chave};\"destinatario\";{feature}; {dest_data_validate[feature]};{error}")
                 #print(v_dest.errors)
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
@@ -459,9 +463,8 @@ def parserNfeHtmlFiles(pathname):
                 #VERIFICA SE HÁ ERRO NA VALIDAÇÃO DO OBJETO
                 v_prod.validate(prod_data_validate)
                 if not v_prod.validate(prod_data_validate):
-                    with open('./logs/validation_log.txt', 'a', encoding='ISO-8859-15') as f:
-                        for feature, error in v_prod.errors.items():
-                            f.write(f"{inputDataNfe.chave}; \"produto\"; {feature}; {prod_data_validate[feature]}; {error}; {datetime.datetime.now()}\n")
+                    for feature, error in v_prod.errors.items():
+                        logger_parser.error(f"{inputDataNfe.chave};\"produto\";{feature};{prod_data_validate[feature]};{error}")
                         #print(v_prod.errors)
                 else:
                     #NA NEGATIVA DE ERRO, COLETA O OBJETO
@@ -479,7 +482,8 @@ def parserNfeHtmlFiles(pathname):
             minute = timestamp.minute
             second = timestamp.second
             file_tr_name = filename.replace(".html", "")
-            filename = f"{year}_{month}_{day}_{hour}_{minute}_{second}_{file_tr_name}.pkl"
+            #filename = f"{year}_{month}_{day}_{hour}_{minute}_{second}_{file_tr_name}.pkl"
+            filename = f"{file_tr_name}.pkl"
             #LISTAR TODOS OS DIRETÓRIOS
             list_folders = [folder for folder in os.listdir("./data-storage/validacao/") if ".pkl" not in folder]
             if str_date not in list_folders:
