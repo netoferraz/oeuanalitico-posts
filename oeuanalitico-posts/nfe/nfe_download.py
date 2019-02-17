@@ -23,6 +23,12 @@ def downloadNfe(pathtosave):
     load_dotenv(verbose=True)
     start_time = time.time()
     BASE_PATH = Path(os.path.join(os.getcwd(), 'nfe-html'))
+    VALID_DOWNLOAD_PATH = Path("./data/valid/")
+    VALID_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
+    INVALID_DOWNLOAD_PATH = Path("./data/invalid/")
+    INVALID_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
+    DUPLICATED_DOWNLOAD_PATH = Path("./data/duplicated")
+    DUPLICATED_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
     listpath = os.listdir(BASE_PATH)
     if pathtosave in listpath:
         pass
@@ -34,46 +40,52 @@ def downloadNfe(pathtosave):
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0")
     driver = webdriver.Firefox(executable_path=webdriver_path,
                                options=options,
-                               log_path='./logs/geckodriver.log')
+                               service_log_path='./logs/geckodriver.log')
     pattern = re.compile(r'=[0-9]{44}&')
-    with open("./data/url_list.csv", "r") as f:
-        urls = f.readlines()
-    for index, url in enumerate(urls):
+    url_list = list(Path("./data/nfe-url/").rglob("*.txt"))
+    num_files = range(0, len(url_list))
+    for index, fname in zip(num_files, url_list):
         if index != 0:
             options = webdriver.FirefoxOptions()
             options.add_argument('--headless')
             options.add_argument("user-agent=Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0")
             driver = webdriver.Firefox(executable_path=webdriver_path,
                                        options=options,
-                                       log_path='./logs/geckodriver.log')
+                                       service_log_path='./logs/geckodriver.log')
         sleep(2)
-        url = url.replace("\n", "")
+        with open(fname, 'r') as urlf:
+            url = urlf.readlines()[0].replace("\n", "")
         # coleta a chave da nfe a partir da url
         try:
             chave = pattern.search(url).group(0)[1:-1]
             file_chave = BASE_PATH / pathtosave / f"{chave}.html"
             if file_chave.is_file():
-                logger_get_html.debug("Arquivo {chave}.html já foi parseado.")
+                logger_get_html.debug(f"Arquivo {chave}.html já foi parseado.")
                 for window in driver.window_handles:
                     driver.switch_to.window(window)
                     driver.close()
+                os.rename(fname, DUPLICATED_DOWNLOAD_PATH / fname.name)
                 continue
             else:
                 logger_get_html.debug(f"Iniciando parser da chave {chave}")
         except AttributeError as error:
             driver.close()
             logger_get_html.critical(f"[{error}];{chave};{url};Não foi possível identificar chave.")
+            # move to invalid directory
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         # acessa o link
         try:
             driver.get(url)
         except TimeoutException as error:
             logger_get_html.error(f"[{error}];{chave};{url};ERRO NO GET.")
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         try:
             driver.find_element_by_css_selector("a.botoes:nth-child(2)").click()
         except NoSuchElementException as error:
             logger_get_html.error(f"[{error}];{chave};{url};Item ausente.")
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             driver.close()
             continue
         else:
@@ -96,6 +108,7 @@ def downloadNfe(pathtosave):
                 driver.switch_to.window(window)
                 driver.close()
             logger_get_html.error(f"[POPUP];{chave};{url};Janela com Alerta.")
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         sleep(2)
         try:
@@ -107,6 +120,7 @@ def downloadNfe(pathtosave):
                     driver.switch_to.window(window)
                     driver.close()
             logger_get_html.error(f"[IFRAME];{chave};{url};Iframe não encontrado.")
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
             sleep(5)
@@ -115,6 +129,7 @@ def downloadNfe(pathtosave):
         except NoSuchElementException as error:
             driver.close()
             logger_get_html.error(f"[{error}];{chave};{url};Item não clicável.")
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
             driver.switch_to.window(driver.window_handles[-1])
@@ -126,11 +141,16 @@ def downloadNfe(pathtosave):
         with open(filepath + "/" + filename, 'w') as f:
             f.write(page_source)
         logger_get_html.info(f"[NA];{chave};{url};Download concluído.")
-        logger_get_html.debug(f"NFe: {chave} ----> {index+1}/{len(urls)} @ {round((index+1)/len(urls)*100,2)}% concluído.")
+        logger_get_html.debug(f"NFe: {chave} ----> {index+1}/{len(url_list)} @ {round((index+1)/len(url_list)*100,2)}% concluído.")
         logger_get_html.debug(f"Download concluído: {time.strftime('%H:%M:%S')}.\n")
         for window in driver.window_handles:
             driver.switch_to.window(window)
             driver.close()
+            fname_target = fname.name
+            try:
+                fname.replace(VALID_DOWNLOAD_PATH / fname_target)
+            except FileNotFoundError:
+                pass
     timeM = round((time.time() - start_time) / 60, 3)
     logger_get_html.debug(f"Tempo de execução foi de {timeM} minutos")
 
