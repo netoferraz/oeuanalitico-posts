@@ -38,3 +38,23 @@ logger_parser.addHandler(pfh_handler)
 logger_parser.setLevel(10)
 logger_parser.handlers[0].setLevel(10)
 logger_parser.handlers[1].setLevel(20)
+
+# logger da conversão de pkl em csv
+
+logger_tabular = logging.getLogger("parser_tocsv")
+# Create handlers
+tstr_handler = logging.StreamHandler()
+tfh_handler = logging.FileHandler('./logs/logger_tabular.log')
+
+tstr_format = logging.Formatter("%(asctime)s;%(name)s;%(levelname)s;%(message)s", "%Y-%m-%d %H:%M:%S")
+tfh_format = logging.Formatter("%(asctime)s;%(name)s;%(levelname)s;%(lineno)d;%(message)s", "%Y-%m-%d %H:%M:%S")
+tstr_handler.setFormatter(tstr_format)
+tfh_handler.setFormatter(tfh_format)
+
+# Add handlers to the logger
+logger_tabular.addHandler(tstr_handler)
+logger_tabular.addHandler(tfh_handler)
+
+logger_tabular.setLevel(10)
+logger_tabular.handlers[0].setLevel(10)
+logger_tabular.handlers[1].setLevel(20)

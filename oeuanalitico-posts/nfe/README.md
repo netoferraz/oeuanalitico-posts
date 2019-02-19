@@ -11,5 +11,12 @@ O script deve ser executado para realizar o download dos arquivos contendo as ur
 ## db-manager.py
 Cria o banco de dados.
 
-## pre-processing/parser_url_files.py
-Cria o arquivo /data/url_list.csv contendo todos as urls armazenadas nos arquivos localizados em `/data/nfe-url`
+## nfe_download.py
+Acessa as urls coletadas pelo script gdrive-download.py e realiza o download dos arquivos .html
+
+## nfe_html_paser.py
+Script para realizar o parser dos arquivos .html
+
+## nfe_pkl_to_csv.py
+Script para converter arquivos .pkl em .csv
+
