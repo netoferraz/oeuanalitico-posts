@@ -3,10 +3,12 @@ from pydrive.drive import GoogleDrive
 from sqlalchemy import create_engine, MetaData
 from pathlib import Path
 # connect to database
+"""
 host = Path.cwd().parent / "db" / "nfe.db"
 engine = create_engine(f"sqlite:///{host}")
 metadata = MetaData(engine)
 conn = engine.connect()
+"""
 # https://stackoverflow.com/a/33426759
 gauth = GoogleAuth()
 # Try to load saved client credentials
@@ -26,11 +28,12 @@ gauth.SaveCredentialsFile(credentials)
 drive = GoogleDrive(gauth)
 
 folder = "1s8HXOk0B0_WfCLW_muaIj2bS-hcifWTf"
-
 file_list = drive.ListFile({"q": f"'{folder}' in parents and trashed=false"}).GetList()
 
+already_downloaded = [f.name for f in Path("../data/").rglob("*.txt")]
 for f in file_list:
     id_file = f['id']
     create_file = drive.CreateFile({"id": id_file})
     print(f"Iniciando download do arquivo {create_file['title']}.\n")
-    create_file.GetContentFile(Path.cwd().parent / f"data/nfe-url/{create_file['title']}")
+    if create_file['title'] not in already_downloaded:
+        create_file.GetContentFile(Path.cwd().parent / f"data/nfe-url/{create_file['title']}")

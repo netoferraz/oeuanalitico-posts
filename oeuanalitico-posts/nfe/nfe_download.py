@@ -23,11 +23,11 @@ def downloadNfe(pathtosave):
     load_dotenv(verbose=True)
     start_time = time.time()
     BASE_PATH = Path(os.path.join(os.getcwd(), 'nfe-html'))
-    VALID_DOWNLOAD_PATH = Path("./data/valid/")
+    VALID_DOWNLOAD_PATH = Path("./data/processed/valid/")
     VALID_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
-    INVALID_DOWNLOAD_PATH = Path("./data/invalid/")
+    INVALID_DOWNLOAD_PATH = Path("./data/processed/invalid/")
     INVALID_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
-    DUPLICATED_DOWNLOAD_PATH = Path("./data/duplicated")
+    DUPLICATED_DOWNLOAD_PATH = Path("./data/processed/duplicated")
     DUPLICATED_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
     listpath = os.listdir(BASE_PATH)
     if pathtosave in listpath:
@@ -70,7 +70,7 @@ def downloadNfe(pathtosave):
                 logger_get_html.debug(f"Iniciando parser da chave {chave}")
         except AttributeError as error:
             driver.close()
-            logger_get_html.critical(f"[{error}];{chave};{url};Não foi possível identificar chave.")
+            logger_get_html.critical(f"{error};{chave};{url};Não foi possível identificar chave.")
             # move to invalid directory
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
@@ -78,13 +78,13 @@ def downloadNfe(pathtosave):
         try:
             driver.get(url)
         except TimeoutException as error:
-            logger_get_html.error(f"[{error}];{chave};{url};ERRO NO GET.")
+            logger_get_html.error(f"{error};{chave};{url};ERRO NO GET.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         try:
             driver.find_element_by_css_selector("a.botoes:nth-child(2)").click()
         except NoSuchElementException as error:
-            logger_get_html.error(f"[{error}];{chave};{url};Item ausente.")
+            logger_get_html.error(f"{error};{chave};{url};Item ausente.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             driver.close()
             continue
@@ -107,7 +107,7 @@ def downloadNfe(pathtosave):
             for window in driver.window_handles:
                 driver.switch_to.window(window)
                 driver.close()
-            logger_get_html.error(f"[POPUP];{chave};{url};Janela com Alerta.")
+            logger_get_html.error(f"POPUP;{chave};{url};Janela com Alerta.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         sleep(2)
@@ -119,7 +119,7 @@ def downloadNfe(pathtosave):
                 for window in driver.window_handles:
                     driver.switch_to.window(window)
                     driver.close()
-            logger_get_html.error(f"[IFRAME];{chave};{url};Iframe não encontrado.")
+            logger_get_html.error(f"IFRAME;{chave};{url};Iframe não encontrado.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
@@ -128,7 +128,7 @@ def downloadNfe(pathtosave):
             driver.find_element_by_css_selector("#PORTAL_NFE_IMPRESSORA > a:nth-child(1) > img:nth-child(1)").click()
         except NoSuchElementException as error:
             driver.close()
-            logger_get_html.error(f"[{error}];{chave};{url};Item não clicável.")
+            logger_get_html.error(f"{error};{chave};{url};Item não clicável.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
@@ -140,7 +140,7 @@ def downloadNfe(pathtosave):
         filepath = os.path.join(BASE_PATH, pathtosave)
         with open(filepath + "/" + filename, 'w') as f:
             f.write(page_source)
-        logger_get_html.info(f"[NA];{chave};{url};Download concluído.")
+        logger_get_html.info(f"NA;{chave};{url};Download concluído.")
         logger_get_html.debug(f"NFe: {chave} ----> {index+1}/{len(url_list)} @ {round((index+1)/len(url_list)*100,2)}% concluído.")
         logger_get_html.debug(f"Download concluído: {time.strftime('%H:%M:%S')}.\n")
         for window in driver.window_handles:
