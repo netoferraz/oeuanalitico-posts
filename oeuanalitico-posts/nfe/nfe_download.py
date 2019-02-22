@@ -36,31 +36,37 @@ def downloadNfe(pathtosave):
         os.mkdir(os.path.join(BASE_PATH, pathtosave))
     webdriver_path = os.getenv("WEBDRIVER_FIREFOX")
     options = webdriver.FirefoxOptions()
+    firefox_profile = webdriver.FirefoxProfile()
+    firefox_profile.set_preference("browser.privatebrowsing.autostart", True)
     options.add_argument('--headless')
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0")
     driver = webdriver.Firefox(executable_path=webdriver_path,
                                options=options,
+                               firefox_profile=firefox_profile,
                                service_log_path='./logs/geckodriver.log')
-    pattern = re.compile(r'=[0-9]{44}&')
+    pattern = re.compile(r'=[0-9]{44}&|=[0-9]{44}\|')
     url_list = list(Path("./data/nfe-url/").rglob("*.txt"))
     num_files = range(0, len(url_list))
     for index, fname in zip(num_files, url_list):
         if index != 0:
             options = webdriver.FirefoxOptions()
+            firefox_profile = webdriver.FirefoxProfile()
+            firefox_profile.set_preference("browser.privatebrowsing.autostart", True)
             options.add_argument('--headless')
             options.add_argument("user-agent=Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0")
             driver = webdriver.Firefox(executable_path=webdriver_path,
                                        options=options,
+                                       firefox_profile=firefox_profile,
                                        service_log_path='./logs/geckodriver.log')
         sleep(2)
         with open(fname, 'r') as urlf:
-            url = urlf.readlines()[0].replace("\n", "")
+            url = urlf.readlines()[0].replace("\n", "")p
         # coleta a chave da nfe a partir da url
         try:
             chave = pattern.search(url).group(0)[1:-1]
             file_chave = BASE_PATH / pathtosave / f"{chave}.html"
             if file_chave.is_file():
-                logger_get_html.debug(f"Arquivo {chave}.html já foi parseado.")
+                logger_get_html.debug(f"Arquivo {chave}.html ja foi parseado.")
                 for window in driver.window_handles:
                     driver.switch_to.window(window)
                     driver.close()
@@ -70,7 +76,7 @@ def downloadNfe(pathtosave):
                 logger_get_html.debug(f"Iniciando parser da chave {chave}")
         except AttributeError as error:
             driver.close()
-            logger_get_html.critical(f"{error};{chave};{url};Não foi possível identificar chave.")
+            logger_get_html.critical(f"{error};{chave};{url};{fname};Nao foi possível identificar chave.")
             # move to invalid directory
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
@@ -78,27 +84,26 @@ def downloadNfe(pathtosave):
         try:
             driver.get(url)
         except TimeoutException as error:
-            logger_get_html.error(f"{error};{chave};{url};ERRO NO GET.")
+            logger_get_html.error(f"{error};{chave};{url};{fname};ERRO NO GET.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         try:
             driver.find_element_by_css_selector("a.botoes:nth-child(2)").click()
         except NoSuchElementException as error:
-            logger_get_html.error(f"{error};{chave};{url};Item ausente.")
+            logger_get_html.error(f"{error};{chave};{url};{fname};Item ausente.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             driver.close()
             continue
         else:
             num_windows = len(driver.window_handles)
             while num_windows == 1:
-                print(f"Numero de janelas é de {num_windows}.")
                 num_windows = len(driver.window_handles)
             new_window = driver.window_handles[1]
         # change window
         sleep(2)
         driver.switch_to.window(new_window)
         try:
-            WebDriverWait(driver, 2).until(EC.alert_is_present(), "Verifica se há algum alerta.")
+            WebDriverWait(driver, 2).until(EC.alert_is_present(), "Verifica se ha algum alerta.")
             alert = driver.switch_to.alert
             alert.accept()
         except TimeoutException:
@@ -107,19 +112,19 @@ def downloadNfe(pathtosave):
             for window in driver.window_handles:
                 driver.switch_to.window(window)
                 driver.close()
-            logger_get_html.error(f"POPUP;{chave};{url};Janela com Alerta.")
+            logger_get_html.error(f"POPUP;{chave};{url};{fname};Janela com Alerta.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         sleep(2)
         try:
-            element = WebDriverWait(driver, 20).until(
+            _ = WebDriverWait(driver, 20).until(
                 EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//*[@id=\"fundoif\"]")))
         except:
             if len(driver.window_handles) > 1:
                 for window in driver.window_handles:
                     driver.switch_to.window(window)
                     driver.close()
-            logger_get_html.error(f"IFRAME;{chave};{url};Iframe não encontrado.")
+            logger_get_html.error(f"IFRAME;{chave};{url};{fname};Iframe nao encontrado.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
@@ -128,7 +133,7 @@ def downloadNfe(pathtosave):
             driver.find_element_by_css_selector("#PORTAL_NFE_IMPRESSORA > a:nth-child(1) > img:nth-child(1)").click()
         except NoSuchElementException as error:
             driver.close()
-            logger_get_html.error(f"{error};{chave};{url};Item não clicável.")
+            logger_get_html.error(f"{error};{chave};{url};{fname};Item nao clicavel.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
@@ -140,9 +145,9 @@ def downloadNfe(pathtosave):
         filepath = os.path.join(BASE_PATH, pathtosave)
         with open(filepath + "/" + filename, 'w') as f:
             f.write(page_source)
-        logger_get_html.info(f"NA;{chave};{url};Download concluído.")
-        logger_get_html.debug(f"NFe: {chave} ----> {index+1}/{len(url_list)} @ {round((index+1)/len(url_list)*100,2)}% concluído.")
-        logger_get_html.debug(f"Download concluído: {time.strftime('%H:%M:%S')}.\n")
+        logger_get_html.info(f"NA;{chave};{url};{fname};Download concluido.")
+        logger_get_html.debug(f"NFe: {chave} ----> {index+1}/{len(url_list)} @ {round((index+1)/len(url_list)*100,2)}% concluido.")
+        logger_get_html.debug(f"Download concluido: {time.strftime('%H:%M:%S')}.\n")
         for window in driver.window_handles:
             driver.switch_to.window(window)
             driver.close()
@@ -152,7 +157,7 @@ def downloadNfe(pathtosave):
             except FileNotFoundError:
                 pass
     timeM = round((time.time() - start_time) / 60, 3)
-    logger_get_html.debug(f"Tempo de execução foi de {timeM} minutos")
+    logger_get_html.debug(f"Tempo de execucao foi de {timeM} minutos")
 
 
 if __name__ == "__main__":
