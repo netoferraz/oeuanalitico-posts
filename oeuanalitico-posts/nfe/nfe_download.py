@@ -64,6 +64,13 @@ def downloadNfe(pathtosave):
         # coleta a chave da nfe a partir da url
         try:
             chave = pattern.search(url).group(0)[1:-1]
+        except AttributeError as error:
+            driver.close()
+            logger_get_html.critical(f"{error};RE ERROR;{url};{fname};Nao foi possível identificar chave.")
+            # move to invalid directory
+            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
+            continue
+        else:
             file_chave = BASE_PATH / pathtosave / f"{chave}.html"
             if file_chave.is_file():
                 logger_get_html.debug(f"Arquivo {chave}.html ja foi parseado.")
@@ -74,12 +81,6 @@ def downloadNfe(pathtosave):
                 continue
             else:
                 logger_get_html.debug(f"Iniciando parser da chave {chave}")
-        except AttributeError as error:
-            driver.close()
-            logger_get_html.critical(f"{error};{chave};{url};{fname};Nao foi possível identificar chave.")
-            # move to invalid directory
-            os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
-            continue
         # acessa o link
         try:
             driver.get(url)
@@ -90,7 +91,7 @@ def downloadNfe(pathtosave):
         try:
             driver.find_element_by_css_selector("a.botoes:nth-child(2)").click()
         except NoSuchElementException as error:
-            logger_get_html.error(f"{error};{chave};{url};{fname};Item ausente.")
+            logger_get_html.error(f"nao foi possivel encontrar o botao;{chave};{url};{fname};Item ausente.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             driver.close()
             continue
