@@ -52,7 +52,7 @@ def parserNfeHtmlFiles(pathname):
                             try:
                                 assert len(inputDataNfe.chave) == 59
                             except AssertionError as error:
-                                logger_parser.critical(f"{filename_chave};{erro};elemento não possui 59 caracteres")
+                                logger_parser.critical(f"{filename_chave};{error};elemento não possui 59 caracteres")
                     #NÚMERO DA NOTA FISCAL
                     elif desc.text_content().strip() == 'Número NF-e:':
                         numeroNfe = desc.getnext()
