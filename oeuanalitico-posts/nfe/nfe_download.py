@@ -60,7 +60,7 @@ def downloadNfe(pathtosave):
                                        service_log_path='./logs/geckodriver.log')
         sleep(2)
         with open(fname, 'r') as urlf:
-            url = urlf.readlines()[0].replace("\n", "")p
+            url = urlf.readlines()[0].replace("\n", "")
         # coleta a chave da nfe a partir da url
         try:
             chave = pattern.search(url).group(0)[1:-1]

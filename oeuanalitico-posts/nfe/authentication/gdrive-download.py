@@ -34,6 +34,6 @@ already_downloaded = [f.name for f in Path("../data/").rglob("*.txt")]
 for f in file_list:
     id_file = f['id']
     create_file = drive.CreateFile({"id": id_file})
-    print(f"Iniciando download do arquivo {create_file['title']}.\n")
     if create_file['title'] not in already_downloaded:
+        print(f"Iniciando download do arquivo {create_file['title']}.\n")
         create_file.GetContentFile(Path.cwd().parent / f"data/nfe-url/{create_file['title']}")
