@@ -73,7 +73,7 @@ def downloadNfe(pathtosave):
         else:
             file_chave = BASE_PATH / pathtosave / f"{chave}.html"
             if file_chave.is_file():
-                logger_get_html.debug(f"Arquivo {chave}.html ja foi parseado.")
+                logger_get_html.error(f"REPETIDO;{chave};{url};{fname};Arquivo {chave}.html ja foi parseado.")
                 for window in driver.window_handles:
                     driver.switch_to.window(window)
                     driver.close()
@@ -90,7 +90,7 @@ def downloadNfe(pathtosave):
             continue
         try:
             driver.find_element_by_css_selector("a.botoes:nth-child(2)").click()
-        except NoSuchElementException as error:
+        except NoSuchElementException:
             logger_get_html.error(f"nao foi possivel encontrar o botao;{chave};{url};{fname};Item ausente.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             driver.close()
@@ -132,9 +132,9 @@ def downloadNfe(pathtosave):
             sleep(5)
         try:
             driver.find_element_by_css_selector("#PORTAL_NFE_IMPRESSORA > a:nth-child(1) > img:nth-child(1)").click()
-        except NoSuchElementException as error:
+        except NoSuchElementException:
             driver.close()
-            logger_get_html.error(f"{error};{chave};{url};{fname};Item nao clicavel.")
+            logger_get_html.error(f"ERRO NO BOTAO;{chave};{url};{fname};Item nao clicavel.")
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
