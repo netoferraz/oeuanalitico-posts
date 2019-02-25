@@ -12,7 +12,7 @@ args = parser.parse_args()
 def pklParserToCsV(pathname, filename):
     start_time = time.time()
     # list os arquivos para realizar o parser
-    path = os.path.join(os.getcwd(), pathname)
+    path = os.path.join(os.getcwd(), "data-storage/validacao", pathname)
     listdir = os.listdir(path)
     pklFiles = [f for f in listdir if '.pkl' in f]
     cols = [
@@ -70,8 +70,8 @@ def pklParserToCsV(pathname, filename):
         csv.write(string_cols + "\n")
         for index_file, file in enumerate(pklFiles):
             with open(os.path.join(path, file), 'rb') as filedata:
-                #percentual = round((index_file+1)/len(pklFiles)*100,2)
-                #print(f"Carregando arquivo {file} @ status: {percentual}%")
+                percentual = round((index_file+1)/len(pklFiles)*100,2)
+                print(f"Carregando arquivo {file} @ status: {percentual}%")
                 data = pickle.load(filedata)
                 validate_data = {
                     "container": False,
@@ -135,11 +135,15 @@ def pklParserToCsV(pathname, filename):
                         # DADOS DO PRODUTO
                         dados_prod_p1 = f"{produto[0]['nome']}; {produto[0]['quantidade']}; {produto[0]['unidade']}; {produto[0]['valor']}; {produto[0]['codigo_produto']}; {produto[0]['codigo_ncm']}; {produto[0]['cfop']};"
                         dados_prod_p2 = f"{produto[0]['codigo_ean_comercial']}; {produto[0]['valor_unitario_cmc']}; {produto[0]['valor_unitario_trib']}; {produto[0]['unidade_trib']}"
-                    elif all(value == True for value in validate_data.values()):
+                    """
+                    if all(value == True for value in validate_data.values()):
                         full_line = dados_nfe + dados_emissor_p1 + dados_emissor_p2 + dados_emissor_p3 + dados_dest_p1 + dados_dest_p2 + dados_prod_p1 + dados_prod_p2
                         csv.write(full_line + '\n')
+                    """
+                    full_line = dados_nfe + dados_emissor_p1 + dados_emissor_p2 + dados_emissor_p3 + dados_dest_p1 + dados_dest_p2 + dados_prod_p1 + dados_prod_p2
+                    csv.write(full_line + '\n')
                     validate_data['produto'] = False
-                if len(produto) > 1:
+                elif len(produto) > 1:
                     for pdt in produto:
                         try:
                             assert isinstance(pdt, dict)
@@ -163,15 +167,20 @@ def pklParserToCsV(pathname, filename):
                             # DADOS DO PRODUTO
                             dados_prod_p1 = f"{pdt['nome']}; {pdt['quantidade']}; {pdt['unidade']}; {pdt['valor']}; {pdt['codigo_produto']}; {pdt['codigo_ncm']}; {pdt['cfop']};"
                             dados_prod_p2 = f"{pdt['codigo_ean_comercial']}; {pdt['valor_unitario_cmc']}; {pdt['valor_unitario_trib']}; {pdt['unidade_trib']}"
+                        """
                         if all(value == True for value in validate_data.values()):
                             full_line = dados_nfe + dados_emissor_p1 + dados_emissor_p2 + dados_emissor_p3 + dados_dest_p1 + dados_dest_p2 + dados_prod_p1 + dados_prod_p2
                             csv.write(full_line + '\n')
+                        """
+                        full_line = dados_nfe + dados_emissor_p1 + dados_emissor_p2 + dados_emissor_p3 + dados_dest_p1 + dados_dest_p2 + dados_prod_p1 + dados_prod_p2
+                        csv.write(full_line + '\n')
                         validate_data['produto'] = False
                     """elif "full_line" in locals():
                     print(f"Escrita do arquivo {file} @ status: {percentual}%")
-                    csv.write(full_line+'\n')
+                    csv.write(full_line+'\n')"""
+                    print(f"Escrita do arquivo {file} @ status: {percentual}%")
                 else:
-                    print(f"Nfe {file} não validada para escrita.")"""
+                    print(f"Nfe {file} não validada para escrita.")
 
     timeM = round((time.time() - start_time) / 60, 3)
     print(f"Tempo de execução foi de {timeM} minutos")

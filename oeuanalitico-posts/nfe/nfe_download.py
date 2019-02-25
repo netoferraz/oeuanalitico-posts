@@ -129,7 +129,7 @@ def downloadNfe(pathtosave):
             os.rename(fname, INVALID_DOWNLOAD_PATH / fname.name)
             continue
         else:
-            sleep(5)
+            sleep(3)
         try:
             driver.find_element_by_css_selector("#PORTAL_NFE_IMPRESSORA > a:nth-child(1) > img:nth-child(1)").click()
         except NoSuchElementException:
@@ -139,9 +139,9 @@ def downloadNfe(pathtosave):
             continue
         else:
             driver.switch_to.window(driver.window_handles[-1])
-            sleep(5)
+            sleep(3)
         page_source = driver.page_source
-        filename = f"{chave}.html"
+        filename = f"{fname.name[:-4]}_{chave}.html"
 
         filepath = os.path.join(BASE_PATH, pathtosave)
         with open(filepath + "/" + filename, 'w') as f:

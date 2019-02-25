@@ -16,3 +16,21 @@ def convert_to_numeric(num):
         return float(num)
     else:
         return float(num)
+
+def identify_encoding(filename: str) -> str:
+    """
+    Identifica o encoding do arquivo filename retornando uma string com o nome do encoding.
+    
+    Atributos:
+        filename: é o path (full ou relativo) do arquivo a ser analisado.
+    """
+    try:
+        encoding='utf8'
+        with open(filename, "r", encoding=encoding) as file:
+            pgsrc = file.readlines()
+    except UnicodeDecodeError:
+        encoding='latin1'
+        with open(filename, "r", encoding=encoding) as file:
+            pgsrc = file.readlines()
+    finally:
+        return encoding
