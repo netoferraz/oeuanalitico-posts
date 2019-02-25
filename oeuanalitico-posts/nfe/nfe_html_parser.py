@@ -26,9 +26,6 @@ def parserNfeHtmlFiles(pathname):
         with open(os.path.join(fullpath, filename), 'r', encoding='latin1') as f:
             pgsrc = f.readlines()
             html = lh.fromstring("".join(pgsrc))
-            #coleta o index do último hífen da string
-            #filename_chave_index = filename.rindex('_')
-            #filename_chave = filename[filename_chave_index+1:]
             filename_chave = filename[:-5]
             percentual = round((index_file+1)/len(list_files)*100,2)
             logger_parser.debug(f"Iniciando o parser do arquivo {filename} @ status: {percentual}%")
@@ -53,11 +50,13 @@ def parserNfeHtmlFiles(pathname):
                                 assert len(inputDataNfe.chave) == 59
                             except AssertionError as error:
                                 logger_parser.critical(f"{filename_chave};{error};elemento não possui 59 caracteres")
+                                continue
                             try:
-                                chave_html = inputDataNfe.chave.replace("-","").replace(".", "").replace("/","")
-                                assert filename_chave[-44:] == chave_html
+                                chave_html = inputDataNfe.chave.replace("-","").replace(".", "").replace("/","").strip()
+                                assert filename_chave[-44:].strip() == chave_html
                             except AssertionError as error:
                                 logger_parser.critical(f"chave da url: {filename_chave[-44:]} != chave do html: {chave_html}.")
+                                continue
                     #NÚMERO DA NOTA FISCAL
                     elif desc.text_content().strip() == 'Número NF-e:':
                         numeroNfe = desc.getnext()
@@ -215,7 +214,7 @@ def parserNfeHtmlFiles(pathname):
                             else:
                                 dest = Destinatario(rz.getnext().text_content().strip())
                         except AttributeError as error:
-                            logger_parser.error(f"{filename_chave};{error};Nome Destinatario")
+                            logger_parser.debug(f"{filename_chave};{error};Nome Destinatario")
                             continue
                     elif desc.text_content() == 'CPF':
                         cpf = desc.getnext()
@@ -357,7 +356,7 @@ def parserNfeHtmlFiles(pathname):
                                         ean_cmc = int(cd_ean_cmc.text_content().strip())
                                         prod.codigo_ean_comercial = ean_cmc
                                     except ValueError as error:
-                                        logger_parser.error(f"{filename_chave};{error};Dados Produto - {cd_ean_cmc.text_content().strip()} - {type(cd_ean_cmc.text_content().strip())}")
+                                        logger_parser.debug(f"{filename_chave};{error};Dados Produto - {cd_ean_cmc.text_content().strip()} - {type(cd_ean_cmc.text_content().strip())}")
                                         pass
                                 elif desc.text_content().strip() == 'Valor Unitário de Comercialização':
                                     valor_unit_cmc = desc.getnext()
@@ -396,7 +395,6 @@ def parserNfeHtmlFiles(pathname):
             if not v_nfe.validate(nfe_data_validate):
                 for feature, error in v_nfe.errors.items():
                         logger_parser.error(f"{nfe_data_validate['chave']}; \"nfe\"; {feature}; {nfe_data_validate[feature]};{error}")
-                #print(v_nfe.errors)
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
                 dataAgg['nfe_data'] = nfe_data_validate
@@ -421,7 +419,6 @@ def parserNfeHtmlFiles(pathname):
             if not v_em.validate(em_data_validate):
                 for feature, error in v_em.errors.items():
                         logger_parser.error(f"{inputDataNfe.chave};\"emissor\";{feature};{em_data_validate[feature]};{error}")
-                #print(v_em.errors)
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
                 dataAgg['emissor'] = em_data_validate
@@ -444,7 +441,6 @@ def parserNfeHtmlFiles(pathname):
             if not v_dest.validate(dest_data_validate):
                 for feature, error in v_dest.errors.items():
                     logger_parser.error(f"{inputDataNfe.chave};\"destinatario\";{feature}; {dest_data_validate[feature]};{error}")
-                #print(v_dest.errors)
             else:
                 #ADICIONA OS DADOS DO OBJETO VALIDADO
                 dataAgg['dest'] = dest_data_validate
@@ -470,24 +466,23 @@ def parserNfeHtmlFiles(pathname):
                 if not v_prod.validate(prod_data_validate):
                     for feature, error in v_prod.errors.items():
                         logger_parser.error(f"{inputDataNfe.chave};\"produto\";{feature};{prod_data_validate[feature]};{error}")
-                        #print(v_prod.errors)
                 else:
                     #NA NEGATIVA DE ERRO, COLETA O OBJETO
                     validate_prod_list.append(prod_data_validate)
 
             #ADICIONA A LISTA DE PRODUTOS VALIDADA
-            dataAgg['produtos'] = validate_prod_list
+
+            valor_produtos=round(sum([produto['valor'] for produto in validate_prod_list]),2)
+            try:
+                assert valor_produtos == round(float(dataAgg['nfe_data']['valor']),2)
+            except AssertionError:
+                logger_parser.critical(f"{filename_chave};AssertionError;Valor produtos: {valor_produtos} != Valor Total NFE: {dataAgg['nfe_data']['valor']}")
+            finally:
+                dataAgg['produtos'] = validate_prod_list
 
             timestamp = datetime.datetime.now()
             str_date = timestamp.strftime("%Y_%m_%d")
-            year = timestamp.year
-            month = timestamp.month
-            day = timestamp.day
-            hour = timestamp.hour
-            minute = timestamp.minute
-            second = timestamp.second
             file_tr_name = filename.replace(".html", "")
-            #filename = f"{year}_{month}_{day}_{hour}_{minute}_{second}_{file_tr_name}.pkl"
             filename = f"{file_tr_name}.pkl"
             #LISTAR TODOS OS DIRETÓRIOS
             list_folders = [folder for folder in os.listdir("./data-storage/validacao/") if ".pkl" not in folder]
