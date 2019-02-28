@@ -70,7 +70,7 @@ def pklParserToCsV(pathname, filename):
         csv.write(string_cols + "\n")
         for index_file, file in enumerate(pklFiles):
             with open(os.path.join(path, file), 'rb') as filedata:
-                percentual = round((index_file+1)/len(pklFiles)*100,2)
+                percentual = round((index_file + 1) / len(pklFiles) * 100, 2)
                 print(f"Carregando arquivo {file} @ status: {percentual}%")
                 data = pickle.load(filedata)
                 validate_data = {
@@ -114,7 +114,7 @@ def pklParserToCsV(pathname, filename):
                 produto = data['produtos']
                 if len(produto) == 1:
                     try:
-                        assert isinstance(produto, dict)
+                        assert isinstance(produto[0], dict)
                         validate_data['produto'] = True
                     except AssertionError as error:
                         logger_tabular.critical(f"{file};{error};ausência de nome de produto {produto[0]['nome']}")
