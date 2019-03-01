@@ -21,6 +21,8 @@ selenium = "*"
 python-dotenv = "*"
 jupyterlab = "*"
 pyyaml = "*"
+xlrd = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.7"
