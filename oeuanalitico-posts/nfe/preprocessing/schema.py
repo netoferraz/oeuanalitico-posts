@@ -188,6 +188,10 @@ prod_schema_data = {
         'type' : 'integer',
         'required' : True
     },
+    
+    'valor_desconto' : {
+        'type': 'float'
+    },
 
     'codigo_ean_comercial' : {
         'type' : 'integer'

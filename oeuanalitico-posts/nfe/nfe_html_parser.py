@@ -373,6 +373,10 @@ def parserNfeHtmlFiles(pathname):
                                     unidade_trib = desc.getnext()
                                     unidade_tributavel = unidade_trib.text_content().strip()
                                     prod.unidade_trib = unidade_tributavel
+                                elif desc.text_content().strip() == "Valor do Desconto":
+                                    get_desconto = desc.getnext()
+                                    valor_desconto = get_desconto.text_content().strip()
+                                    prod.desconto = convert_to_numeric(valor_desconto)
                     except TypeError as error:
                         #logger_parser.debug(f"{filename_chave};{error};Dados Produto;")
                         pass
@@ -459,6 +463,7 @@ def parserNfeHtmlFiles(pathname):
                     "codigo_produto" : produto.codigo_produto,
                     "codigo_ncm" : produto.codigo_ncm,
                     "cfop" : produto.cfop,
+                    "valor_desconto" : produto.desconto,
                     "codigo_ean_comercial" : produto.codigo_ean_comercial,
                     "valor_unitario_cmc" : produto.valor_unitario_cmc,
                     "valor_unitario_trib" : produto.valor_unitario_trib,
@@ -475,7 +480,7 @@ def parserNfeHtmlFiles(pathname):
 
             #ADICIONA A LISTA DE PRODUTOS VALIDADA
 
-            valor_produtos=round(sum([produto['valor'] for produto in validate_prod_list]),2)
+            valor_produtos=round(sum([(produto['valor']-produto['valor_desconto']) for produto in validate_prod_list]),2)
             try:
                 assert valor_produtos == round(float(dataAgg['nfe_data']['valor']),2)
             except AssertionError:

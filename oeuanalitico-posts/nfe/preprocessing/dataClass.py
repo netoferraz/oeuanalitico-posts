@@ -92,3 +92,5 @@ class Produto(object):
     valor_unitario_trib = float()
     #unidade tributável
     unidade_trib = str()
+    #desconto
+    desconto = float()
