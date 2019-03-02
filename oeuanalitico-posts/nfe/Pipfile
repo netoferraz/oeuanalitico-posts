@@ -19,10 +19,9 @@ bs4 = "*"
 cssselect = "*"
 selenium = "*"
 python-dotenv = "*"
-jupyterlab = "*"
-pyyaml = "*"
 xlrd = "*"
 openpyxl = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.7"
