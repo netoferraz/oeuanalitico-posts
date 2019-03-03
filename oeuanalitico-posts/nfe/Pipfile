@@ -7,6 +7,8 @@ verify_ssl = true
 ipython = "*"
 pylint = "*"
 ipykernel = "*"
+jupyterlab = "*"
+tornado = "==5.1.1"
 
 [packages]
 sqlalchemy = "*"
