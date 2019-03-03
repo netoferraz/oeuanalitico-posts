@@ -1,96 +1,101 @@
 class NotaFiscal(object):
     def __init__(self, chave):
-        #Chave de Acesso:
+        # Chave de Acesso:
         self.chave = chave
-    #Número NF-e:
+    # Número NF-e:
     numero = int()
-    #Data de Emissão:
+    # Data de Emissão:
     data = str()
-    #Hora
+    # Hora
     hora = str()
-    #Modelo
+    # Modelo
     modelo = int()
-    #Série
+    # Série
     serie = int()
-    #Valor Total da Nota Fiscal
+    # Valor Total da Nota Fiscal
     valor = float()
+
 
 class Emitente(object):
     def __init__(self, razaoSocial):
-        #Nome / Razão Social
+        # Nome / Razão Social
         self.razaoSocial = razaoSocial
-    #Nome Fantasia
+    # Nome Fantasia
     nome_fantasia = str()
-    #CNPJ
+    # CNPJ
     cnpj = str()
-    #Endereço
+    # Endereço
     endereco = str()
     #Bairro / Distrito
     bairro = str()
-    #CEP
+    # CEP
     cep = str()
-    #Município
+    # Município
     municipio = str()
-    #Telefone
+    # Telefone
     telefone = str()
-    #UF
+    # UF
     uf = str()
-    #País
+    # País
     pais = str()
-    #Inscrição Estadual
+    # Inscrição Estadual
     inscricao_estadual = str()
-    #Inscrição Municipal
+    # Inscrição Municipal
     inscricao_municipal = str()
-    #CNAE Fiscal
+    # CNAE Fiscal
     cnae_fiscal = str()
+
 
 class Destinatario(object):
     def __init__(self, razaoSocial):
-        #Nome / Razão Social
+        # Nome / Razão Social
         self.razaoSocial = razaoSocial
-    #CPF
+    # CPF
     cpf = str()
-    #Endereço
+    # Endereço
     endereco = str()
     #Bairro / Distrito
     bairro = str()
-    #CEP
+    # CEP
     cep = str()
-    #Município
+    # Município
     municipio = str()
-    #Telefone
+    # Telefone
     telefone = str()
-    #UF
+    # UF
     uf = str()
-    #País
+    # País
     pais = str()
-    #Inscrição Estadual
+    # Inscrição Estadual
     inscricao_estadual = str()
-    #email
+    # email
     email = str()
+
 
 class Produto(object):
     def __init__(self, nome):
         self.nome = nome
-    #QUANTIDADE
+    # QUANTIDADE
     quantidade = float()
-    #Unidade Comercial
+    # Unidade Comercial
     unidade = str()
-    #VALOR
+    # VALOR
     valor = float()
-    #Código do produto
+    # Código do produto
     codigo_produto = str()
-    #Código NCM
+    # Código NCM
     codigo_ncm = int()
-    #CFOP
+    # CFOP
     cfop = int()
-    #Código EAN Comercial
+    # Código EAN Comercial
     codigo_ean_comercial = int()
-    #Valor Unitário de Comercialização
+    # Valor Unitário de Comercialização
     valor_unitario_cmc = float()
-    #Valor Unitário de Tributação
+    # Valor Unitário de Tributação
     valor_unitario_trib = float()
-    #unidade tributável
+    # unidade tributável
     unidade_trib = str()
-    #desconto
+    # valor tributos
+    valor_tributos = float()
+    # desconto
     desconto = float()
