@@ -377,6 +377,10 @@ def parserNfeHtmlFiles(pathname):
                                     get_desconto = desc.getnext()
                                     valor_desconto = get_desconto.text_content().strip()
                                     prod.desconto = convert_to_numeric(valor_desconto)
+                                elif desc.text_content().strip() == "Valor Aproximado dos Tributos":
+                                    get_valor_tributos = desc.getnext()
+                                    valor_tributos = get_valor_tributos.text_content().strip()
+                                    prod.valor_tributos = convert_to_numeric(valor_tributos)
                     except TypeError as error:
                         #logger_parser.debug(f"{filename_chave};{error};Dados Produto;")
                         pass
@@ -467,7 +471,8 @@ def parserNfeHtmlFiles(pathname):
                     "codigo_ean_comercial" : produto.codigo_ean_comercial,
                     "valor_unitario_cmc" : produto.valor_unitario_cmc,
                     "valor_unitario_trib" : produto.valor_unitario_trib,
-                    "unidade_trib" : produto.unidade_trib
+                    "unidade_trib" : produto.unidade_trib,
+                    "valor_tributos" : produto.valor_tributos
                 }
                 #VERIFICA SE HÁ ERRO NA VALIDAÇÃO DO OBJETO
                 v_prod.validate(prod_data_validate)
