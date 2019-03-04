@@ -90,6 +90,7 @@ def pklParserToCsV(pathname, filename):
                     continue
                 # nota fiscal
                 nfe = data['nfe_data']
+                nfe['chave'] = nfe['chave'].replace("/", "").replace("-", "").replace(".", "")
                 try:
                     assert isinstance(nfe, dict)
                     validate_data['nfe'] = True
