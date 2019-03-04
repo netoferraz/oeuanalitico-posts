@@ -2,7 +2,9 @@ import os
 import pickle
 import argparse
 import time
+import pandas as pd
 from logs.logger import logger_tabular
+from preprocessing.functions import normalize_ncm, get_ncm_values, get_weekday
 parser = argparse.ArgumentParser(description='Parser de arquivos .pkl e retorna um csv')
 parser.add_argument("pathname", help="Diretório onde estão localizados os arquivos .pkl", type=str)
 parser.add_argument("filename", help="nome que será dado ao arquivo .csv")
@@ -73,7 +75,6 @@ def pklParserToCsV(pathname, filename):
         for index_file, file in enumerate(pklFiles):
             with open(os.path.join(path, file), 'rb') as filedata:
                 percentual = round((index_file + 1) / len(pklFiles) * 100, 2)
-                print(f"Carregando arquivo {file} @ status: {percentual}%")
                 data = pickle.load(filedata)
                 validate_data = {
                     "container": False,
@@ -90,6 +91,7 @@ def pklParserToCsV(pathname, filename):
                     continue
                 # nota fiscal
                 nfe = data['nfe_data']
+                nfe['chave'] = nfe['chave'].replace("/", "").replace("-", "").replace(".", "")
                 try:
                     assert isinstance(nfe, dict)
                     validate_data['nfe'] = True
@@ -171,7 +173,40 @@ def pklParserToCsV(pathname, filename):
                     print(f"Escrita do arquivo {file} @ status: {percentual}%")
                 else:
                     print(f"Nfe {file} não validada para escrita.")
-
+    # INPUTA DADOS DE CATEGORIA NCM
+    df = pd.read_csv(f"./tabular-data/{args.filename}.csv", sep=';', encoding='latin1')
+    ncm = pd.read_csv("./data/others/NCM.csv", sep=';', encoding='latin1', dtype={'CO_NCM': str})
+    df['prod_codigo_ncm'] = df['prod_codigo_ncm'].astype(str)
+    df['prod_codigo_ncm'] = df['prod_codigo_ncm'].apply(normalize_ncm)
+    seleciona_codigo_ncm = get_ncm_values()
+    merge_cnm_codes = []
+    [merge_cnm_codes.extend(codigos) for codigos in seleciona_codigo_ncm.values()]
+    df['prod_categoria_ncm'] = ""
+    for cat, lista_ncm in seleciona_codigo_ncm.items():
+        for ncmcod in lista_ncm:
+            df.loc[df['prod_codigo_ncm'] == ncmcod, 'prod_categoria_ncm'] = cat
+    df['nf_datetime'] = df.apply(lambda x: x['nf_data'] + " " + x['nf_hora'], axis='columns')
+    df['nf_datetime'] = df['nf_datetime'].apply(lambda x: x.strip())
+    df['nf_datetime'] = pd.to_datetime(df['nf_datetime'], format="%d/%m/%Y %H:%M:%S")
+    df.set_index(df['nf_datetime'], inplace=True)
+    df = df.sort_index()
+    del df['nf_datetime']
+    df.index = pd.to_datetime(df.index)
+    df['datetime'] = df.index.values.tolist()
+    df['nf_dia_semana'] = df['datetime'].apply(lambda x: get_weekday(x))
+    del df['datetime']
+    df = df[['nf_dia_semana', 'nf_chave', 'nf_numero', 'nf_modelo', 'nf_serie',
+             'nf_valor', 'em_rz', 'em_nomeFantasia', 'em_cnpj', 'em_endereco',
+             'em_bairro', 'em_cep', 'em_municipio', 'em_telefone', 'em_uf',
+             'em_pais', 'em_inscricao_estadual', 'em_inscricao_municipal',
+             'em_cnae_fiscal', 'dest_rz', 'dest_cpf', 'dest_endereco', 'dest_bairro',
+             'dest_cep', 'dest_municipio', 'dest_telefone', 'dest_uf', 'dest_pais',
+             'dest_inscricao_estadual', 'dest_email', 'prod_nome', 'prod_quantidade',
+             'prod_unidade', 'prod_valor', 'prod_codigo_produto', 'prod_codigo_ncm',
+             'prod_categoria_ncm', 'prod_cfop', 'prod_valor_desconto', 'prod_valor_tributos',
+             'prod_codigo_ean_cmc', 'prod_valor_unitario_cmc', 'prod_valor_unitario_trib',
+             'prod_unidade_trib']]
+    df.to_csv(f"./tabular-data/{args.filename}.csv", sep=';', encoding='latin1')
     timeM = round((time.time() - start_time) / 60, 3)
     print(f"Tempo de execução foi de {timeM} minutos")
 
