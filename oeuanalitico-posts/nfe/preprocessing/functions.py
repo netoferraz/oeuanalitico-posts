@@ -47,7 +47,7 @@ def identify_encoding(filename: str) -> str:
         return encoding
 
 
-def report_tabular_data(filename, foldername):
+def report_pkl_into_csv(filename, foldername, logger):
     """
     Produz um relatório do status do arquivo tabular gerado a partir dos arquivos .pkl
 
@@ -63,11 +63,11 @@ def report_tabular_data(filename, foldername):
     pkl_folder = set([f.name[:-4][-44:] for f in pkl_folder])
     num_arquivos_diff = lista_chaves_processadas.difference(pkl_folder)
     if len(num_arquivos_diff) == 0:
-        print(f"Todos os arquivos .pkl foram processados. Ao todo foram processados {df['nf_chave'].nunique()} notas fiscais.\n")
+        logger.debug(f"Todos os arquivos .pkl foram processados. Ao todo foram processados {df['nf_chave'].nunique()} notas fiscais.\n")
     else:
-        print(f"Não foram processados {len(num_arquivos_diff)} arquivos.\n")
+        logger.critical(f"Não foram processados {len(num_arquivos_diff)} arquivos.\n")
         for f in num_arquivos_diff:
-            print(f"Arquivo {f} não foi processado.\n")
+            logger.critical(f"Arquivo {f} não foi processado.\n")
     # VALIDAÇÃO SE HÁ ARQUIVOS DUPLICADOS
     files_check = Path(f"./data-storage/validacao/{foldername}")
     files_check = list(files_check.rglob("*.pkl"))
@@ -77,7 +77,7 @@ def report_tabular_data(filename, foldername):
         a[f] += 1
     for chave, count in a.items():
         if count > 1:
-            print(f"CHAVE: {chave} # {count}")
+            logger.critical(f"CHAVE REPETIDA: {chave} # {count}")
     # VERIFICA SE HÁ ALGUMA INCONSISTÊNCIA NOS VALORES DOS PRODUTOS E DA NOTA FISCAL
     df['prod_valor_liquido'] = df.apply(lambda x: x['prod_valor'] - x['prod_valor_desconto'], axis='columns')
     check_valor_nota_valores = df.groupby("nf_chave")['prod_valor_liquido'].sum().sort_values(ascending=False)
@@ -91,7 +91,7 @@ def report_tabular_data(filename, foldername):
             inconsistencia_count += 1
             diff_produtos = round(valor - validacao, 2)
             container[chave] = diff_produtos
-            print(f"{chave} => Valor Nota: R${validacao} @ Valor Produtos: R${valor} @ Diferença: R${diff_produtos}\n")
+            logger.critical(f"{chave} => Valor Nota: R${validacao} @ Valor Produtos: R${valor} @ Diferença: R${diff_produtos}\n")
 
 
 def normalize_ncm(ncm: str) -> str:
@@ -155,3 +155,43 @@ def get_weekday(value: int):
     }
     weekday = datetime.datetime.utcfromtimestamp(value / 1e9).weekday()
     return convert_int_to_day[weekday]
+
+
+def logging_report(report, list_required_fields, logger):
+    f = Path(report['tables'][0]['source'])
+    map_columns_to_number = report['tables'][0]['headers']
+    map_columns_to_number = {i: col for col, i in zip(map_columns_to_number, range(1, len(map_columns_to_number)))}
+    fields_required_error = {f: False for f in list_required_fields}
+    num_errors = report['error-count']
+    if report['valid']:
+        logger.debug(f"Arquivo: {f.name} válido pelo schema.\n")
+        return True, num_errors
+    else:
+        lista_errors = report['tables'][0]['errors']
+        if 0 < num_errors < 1000:
+            logger.debug(f"Arquivo {f.name} não validado com {num_errors} erros.")
+            for erro in lista_errors:
+                for feature, valor in erro.items():
+                    if feature == 'code':
+                        if valor == 'required-constraint':
+                            # identify which column is null
+                            col = map_columns_to_number[erro['column-number']]
+                            # change validation status of this feature
+                            if not fields_required_error[col]:
+                                fields_required_error[col] = True
+                            line = erro['row-number']
+                            logger.critical(f"{f.name} @ Linha {line} possui {col} sem valor atribuído.")
+                        elif valor == 'enumerable-constraint':
+                            col = map_columns_to_number[erro['column-number']]
+                            line = erro['row-number']
+                            logger.critical(f"{f.name} @ Linha {line} e Coluna {col} erro: {erro['message']} ")
+                        else:
+                            try:
+                                col = map_columns_to_number[erro['column-number']]
+                            except:  # o erro associado não é referente a uma coluna
+                                try:
+                                    line = erro['row-number']
+                                    logger.critical(f"{f.name} @ Linha {line} : {erro['message']}")
+                                except KeyError:
+                                    logger.critical(f"{f.name} @ {erro['message']}")
+        return False, num_errors

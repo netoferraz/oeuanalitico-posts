@@ -1,0 +1,388 @@
+{
+    "fields": [
+        {
+            "name": "nf_datetime",
+            "type": "string",
+            "format": "default",
+            "title": "Timestamp no formato AAAA-MM-DD HH:MM:SS",
+            "description": "Horário que foi registrado a compra.",
+            "constraints": {
+                "required": true,
+                "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+            }
+        },
+        {
+            "name": "nf_dia_semana",
+            "type": "string",
+            "format": "default",
+            "title": "Dia da Semana que ocorreu a compra.",
+            "description": "Dia da Semana da operação financeira.",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "nf_chave",
+            "type": "string",
+            "format": "default",
+            "title": "Chave da Nota Fiscal",
+            "description": "Identificador único de 44 digitos.",
+            "constraints": {
+                "required": true,
+                "pattern": "[0-9]{44}"
+            }
+        },
+        {
+            "name": "nf_numero",
+            "type": "integer",
+            "format": "default",
+            "title": "Número da Nota Fiscal",
+            "description": "Número da Nota Fiscal",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "nf_modelo",
+            "type": "integer",
+            "format": "default",
+            "description": "Modelo da Nota Fiscal",
+            "title": "Modelo da Nota Fiscal",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "nf_serie",
+            "type": "integer",
+            "format": "default",
+            "title": "Série da Nota Fiscal",
+            "description": "Série da Nota Fiscal",
+            "constraints": {
+                "required": true            }
+        },
+        {
+            "name": "nf_valor",
+            "type": "number",
+            "format": "default",
+            "title": "Valor da Nota Fiscal",
+            "description": "Valor Total da Nota Fiscal",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "em_rz",
+            "type": "string",
+            "format": "default",
+            "title": "Razão Social",
+            "description": "Razão Social do Emissor da NFC-e"
+        },
+        {
+            "name": "em_nomeFantasia",
+            "type": "string",
+            "format": "default",
+            "title": "Nome Fantasia",
+            "description": "Nome Fantasia do Emissor da NFC-e"
+        },
+        {
+            "name": "em_cnpj",
+            "type": "string",
+            "format": "default",
+            "title": "CNPJ",
+            "description": "CNPJ do Emissor da NFC-e",
+            "constraints": {
+                "required": true,
+                "pattern" : "[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}/[0-9]{4}-[0-9]{2}"
+            }
+        },
+        {
+            "name": "em_endereco",
+            "type": "string",
+            "format": "default",
+            "title": "Endereço",
+            "description": "Endereço do Emissor da NFC-e."
+
+        },
+        {
+            "name": "em_bairro",
+            "type": "string",
+            "format": "default",
+            "title": "Bairro",
+            "description": "Bairro do Endereço do Emissor da NFC-e."
+        },
+        {
+            "name": "em_cep",
+            "type": "string",
+            "format": "default",
+            "title": "CEP",
+            "description": "CEP do Endereço do Emissor da NFC-e."
+        },
+        {
+            "name": "em_municipio",
+            "type": "string",
+            "format": "default",
+            "title": "Município",
+            "description": "Município onde está localizado o Emissor da NFC-e"
+        },
+        {
+            "name": "em_telefone",
+            "type": "string",
+            "format": "default",
+            "title": "Telefone",
+            "description": "Telefone do Emissor da NFC-e"
+        },
+        {
+            "name": "em_uf",
+            "type": "string",
+            "format": "default",
+            "title": "UF",
+            "description": "UF onde está localizado o Emissor da NFC-e.",
+            "constraints": {
+                "required": true,
+                "enum": [
+                    "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS",
+                    "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC",
+                    "SE", "SP", "TO"
+                ]
+            }
+         },
+        {
+            "name": "em_pais",
+            "type": "string",
+            "format": "default",
+            "title": "País",
+            "description": "País onde está localizado o Emissor da NFC-e."
+        },
+        {
+            "name": "em_inscricao_estadual",
+            "type": "string",
+            "format": "default",
+            "title": "Inscrição Estadual",
+            "description": "Inscrição Estadual do Emissor da NFC-e."
+        },
+        {
+            "name": "em_inscricao_municipal",
+            "type": "string",
+            "format": "default",
+            "title": "Inscrição Municipal",
+            "description": "Inscrição Municipal do Emissor da NFC-e."
+        },
+        {
+            "name": "em_cnae_fiscal",
+            "type": "string",
+            "format": "default",
+            "title": "CNAE",
+            "description": "Código CNAE do Emissor da NFC-e."
+        },
+        {
+            "name": "dest_rz",
+            "type": "string",
+            "format": "default",
+            "title": "Razão Social",
+            "description": "Razão Social do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_cpf",
+            "type": "string",
+            "format": "default",
+            "title": "CPF",
+            "description": "CPF do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_endereco",
+            "type": "string",
+            "format": "default",
+            "title": "Endereço",
+            "description": "Endereço do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_bairro",
+            "type": "string",
+            "format": "default",
+            "title": "Bairro",
+            "description": "Bairro do Endereço do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_cep",
+            "type": "string",
+            "format": "default",
+            "title": "CEP",
+            "description": "CEP do Endereço do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_municipio",
+            "type": "string",
+            "format": "default",
+            "title": "Município",
+            "description": "Município do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_telefone",
+            "type": "string",
+            "format": "default",
+            "title": "Telefone",
+            "description": "Telefone do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_uf",
+            "type": "string",
+            "format": "default",
+            "title": "UF",
+            "description": "UF do Destinatário da NFC-e.",
+            "constraints": {
+                "enum": [
+                    "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS",
+                    "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC",
+                    "SE", "SP", "TO"
+                ]
+            }
+        },
+        {
+            "name": "dest_pais",
+            "type": "string",
+            "format": "default",
+            "title": "País",
+            "description": "País do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_inscricao_estadual",
+            "type": "string",
+            "format": "default",
+            "title": "Inscriação Estadual",
+            "description": "Inscrição Estadual do Destinatário da NFC-e."
+        },
+        {
+            "name": "dest_email",
+            "type": "string",
+            "format": "default",
+            "title": "Email",
+            "description": "Inscrição Estadual do Destinatário da NFC-e."
+        },
+        {
+            "name": "prod_nome",
+            "type": "string",
+            "format": "default",
+            "title": "Nome do Produto",
+            "description": "Nome do Produto",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_quantidade",
+            "type": "string",
+            "format": "default",
+            "title": "Quantidade",
+            "description": "Quantidade de Produto"
+        },
+        {
+            "name": "prod_unidade",
+            "type": "string",
+            "format": "default",
+            "title": "Unidade",
+            "description": "Unidade relativa a quantidade de produto"
+        },
+        {
+            "name": "prod_valor",
+            "type": "number",
+            "format": "default",
+            "title": "Custo do Produto",
+            "description": "Custo em BRL do produto",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_codigo_produto",
+            "type": "string",
+            "format": "default",
+            "title": "Código",
+            "description": "Código do Produto"
+        },
+        {
+            "name": "prod_codigo_ncm",
+            "type": "string",
+            "format": "default",
+            "title": "Código NCM",
+            "description": "Código NCM do Produto",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_categoria_ncm",
+            "type": "string",
+            "format": "default",
+            "title": "Categoria",
+            "description": "Categoria baseada no Código NCM"
+        },
+        {
+            "name": "prod_cfop",
+            "type": "string",
+            "format": "default",
+            "title": "Código CFOP",
+            "description": "Código Fiscal de Operações e Prestações",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_valor_desconto",
+            "type": "number",
+            "format": "default",
+            "title": "Desconto",
+            "description": "Valor do Desconto",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_valor_tributos",
+            "type": "number",
+            "format": "default",
+            "title": "Desconto",
+            "description": "Valor aproximado dos Tributos",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_codigo_ean_cmc",
+            "type": "string",
+            "format": "default",
+            "title": "Código EAN",
+            "description": "European Article Number",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_valor_unitario_cmc",
+            "type": "number",
+            "format": "default",
+            "title": "Valor Unitário",
+            "description": "Valor Unitário de Comercialização",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_valor_unitario_trib",
+            "type": "number",
+            "format": "default",
+            "title": "Valor Unitário de Tributação",
+            "description": "Valor Unitário de Tributação",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "prod_unidade_trib",
+            "type": "string",
+            "format": "default",
+            "title": "Unidade de Tributação",
+            "description": "Unidade de Tributação"
+        }
+    ]
+}

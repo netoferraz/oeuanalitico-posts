@@ -8,9 +8,6 @@ Para isso é necessário acessar o [API Console](https://console.developers.goog
 ## authentication/gdrive-download.py
 O script deve ser executado para realizar o download dos arquivos contendo as urls das NFe.
 
-## db-manager.py
-Cria o banco de dados.
-
 ## nfe_download.py
 Acessa as urls coletadas pelo script gdrive-download.py e realiza o download dos arquivos .html
 
