@@ -142,15 +142,15 @@ def parserNfeHtmlFiles(pathname):
                     elif desc.text_content() == 'CNPJ':
                         cnpj = desc.getnext()
                         if not 'br' in cnpj.tag:
-                            vendor.cnpj = cnpj.text_content().strip()
+                            vendor.cnpj = cnpj.text_content().strip().replace(' ', "")
                         else:
-                            vendor.cnpj = cnpj.getnext().text_content().strip()
+                            vendor.cnpj = cnpj.getnext().text_content().strip().replace(' ', "")
                     elif desc.text_content() == 'Endereço':
                         endereco = desc.getnext()
                         if not 'br' in endereco.tag:
-                            vendor.endereco = endereco.text_content().rstrip().replace("  ","").replace('\n',"")
+                            vendor.endereco = endereco.text_content().strip().replace("  ","").replace('\n',"")
                         else:
-                            vendor.endereco = endereco.getnext().text_content().rstrip().replace("  ","").replace('\n',"")
+                            vendor.endereco = endereco.getnext().text_content().strip().replace("  ","").replace('\n',"")
                     elif desc.text_content() == 'Bairro / Distrito':
                         bairro = desc.getnext()
                         if not 'br' in bairro.tag:
@@ -166,45 +166,45 @@ def parserNfeHtmlFiles(pathname):
                     elif desc.text_content() == 'Município':
                         municipio = desc.getnext()
                         if not 'br' in municipio.tag:
-                            vendor.municipio = municipio.text_content().rstrip().replace("  ","").replace('\n',"")
+                            vendor.municipio = municipio.text_content().strip().replace("  ","").replace('\n',"")
                         else:
-                            vendor.municipio = municipio.getnext().text_content().rstrip().replace("  ","").replace('\n',"")
+                            vendor.municipio = municipio.getnext().text_content().strip().replace("  ","").replace('\n',"")
                     elif desc.text_content() == 'Telefone':
                         telefone = desc.getnext()
                         if not 'br' in telefone.tag:
-                            vendor.telefone = telefone.text_content().rstrip()
+                            vendor.telefone = telefone.text_content().strip()
                         else:
-                            vendor.telefone = telefone.getnext().text_content().rstrip()
+                            vendor.telefone = telefone.getnext().text_content().strip()
                     elif desc.text_content() == 'UF':
                         uf = desc.getnext()
                         if not 'br' in uf.tag:
-                            vendor.uf = uf.text_content().rstrip()
+                            vendor.uf = uf.text_content().strip().replace(' ', "")
                         else:
-                            vendor.uf = uf.getnext().text_content().rstrip()
+                            vendor.uf = uf.getnext().text_content().strip().replace(' ', "")
                     elif desc.text_content() == 'País':
                         pais = desc.getnext()
                         if not 'br' in pais.tag:
-                            vendor.pais = pais.text_content().rstrip().replace("  ","").replace('\n',"")
+                            vendor.pais = pais.text_content().strip().replace("  ","").replace('\n',"")
                         else:
-                            vendor.pais = pais.getnext().text_content().rstrip().replace("  ","").replace('\n',"")
+                            vendor.pais = pais.getnext().text_content().strip().replace("  ","").replace('\n',"")
                     elif desc.text_content() == 'Inscrição Estadual':
                         inscricao_estadual = desc.getnext()
                         if not 'br' in inscricao_estadual.tag:
-                            vendor.inscricao_estadual = inscricao_estadual.text_content().rstrip()
+                            vendor.inscricao_estadual = inscricao_estadual.text_content().strip()
                         else:
-                            vendor.inscricao_estadual = inscricao_estadual.getnext().text_content().rstrip()
+                            vendor.inscricao_estadual = inscricao_estadual.getnext().text_content().strip()
                     elif desc.text_content() == 'Inscrição Municipal':
                         inscricao_municipal = desc.getnext()
                         if not 'br' in inscricao_municipal.tag:
-                            vendor.inscricao_municipal = inscricao_municipal.text_content().rstrip()
+                            vendor.inscricao_municipal = inscricao_municipal.text_content().strip()
                         else:
-                            vendor.inscricao_municipal = inscricao_municipal.getnext().text_content().rstrip()
+                            vendor.inscricao_municipal = inscricao_municipal.getnext().text_content().strip()
                     elif desc.text_content() == 'CNAE Fiscal':
                         cnae_fiscal = desc.getnext()
                         if not 'br' in cnae_fiscal.tag:
-                            vendor.cnae_fiscal = cnae_fiscal.text_content().rstrip()
+                            vendor.cnae_fiscal = cnae_fiscal.text_content().strip()
                         else:
-                            vendor.cnae_fiscal = cnae_fiscal.getnext().text_content().rstrip()
+                            vendor.cnae_fiscal = cnae_fiscal.getnext().text_content().strip()
             #dest_data_element = html.xpath('//*[@id="DestRem"]')[0]
             dest_data_element = html.xpath('/html/body/table/tbody/tr/td/table[13]')[0]
             for dadoEm in dest_data_element:
@@ -228,9 +228,9 @@ def parserNfeHtmlFiles(pathname):
                     elif desc.text_content() == 'Endereço':
                         endereco = desc.getnext()
                         if not 'br' in endereco.tag:
-                            dest.endereco = endereco.text_content().rstrip().replace("  ","").replace('\n',"")
+                            dest.endereco = endereco.text_content().strip().replace("  ","").replace('\n',"")
                         else:
-                            dest.endereco = endereco.getnext().text_content().rstrip().replace("  ","").replace('\n',"")
+                            dest.endereco = endereco.getnext().text_content().strip().replace("  ","").replace('\n',"")
                     elif desc.text_content() == 'Bairro / Distrito':
                         bairro = desc.getnext()
                         if not 'br' in bairro.tag:
@@ -246,39 +246,39 @@ def parserNfeHtmlFiles(pathname):
                     elif desc.text_content() == 'Município':
                         municipio = desc.getnext()
                         if not 'br' in municipio.tag:
-                            dest.municipio = municipio.text_content().rstrip().replace("  ","").replace('\n',"")
+                            dest.municipio = municipio.text_content().strip().replace("  ","").replace('\n',"")
                         else:
-                            dest.municipio = municipio.getnext().text_content().rstrip().replace("  ","").replace('\n',"")
+                            dest.municipio = municipio.getnext().text_content().strip().replace("  ","").replace('\n',"")
                     elif desc.text_content() == 'Telefone':
                         telefone = desc.getnext()
                         if not 'br' in telefone.tag:
-                            dest.telefone = telefone.text_content().rstrip()
+                            dest.telefone = telefone.text_content().strip()
                         else:
-                            dest.telefone = telefone.getnext().text_content().rstrip()
+                            dest.telefone = telefone.getnext().text_content().strip()
                     elif desc.text_content() == 'UF':
                         uf = desc.getnext()
                         if not 'br' in uf.tag:
-                            dest.uf = uf.text_content().rstrip()
+                            dest.uf = uf.text_content().strip()
                         else:
-                            dest.uf = uf.getnext().text_content().rstrip()
+                            dest.uf = uf.getnext().text_content().strip()
                     elif desc.text_content() == 'País':
                         pais = desc.getnext()
                         if not 'br' in pais.tag:
-                            dest.pais = pais.text_content().rstrip().replace("  ","").replace('\n',"")
+                            dest.pais = pais.text_content().strip().replace("  ","").replace('\n',"")
                         else:
-                            dest.pais = pais.getnext().text_content().rstrip().replace("  ","").replace('\n',"")
+                            dest.pais = pais.getnext().text_content().strip().replace("  ","").replace('\n',"")
                     elif desc.text_content() == 'Inscrição Estadual':
                         inscricao_estadual = desc.getnext()
                         if not 'br' in inscricao_estadual.tag:
-                            dest.inscricao_estadual = inscricao_estadual.text_content().rstrip()
+                            dest.inscricao_estadual = inscricao_estadual.text_content().strip()
                         else:
-                            dest.inscricao_estadual = inscricao_estadual.getnext().text_content().rstrip()
+                            dest.inscricao_estadual = inscricao_estadual.getnext().text_content().strip()
                     elif desc.text_content() == 'E-mail':
                         email = desc.getnext()
                         if not 'br' in email.tag:
-                            dest.email = email.text_content().rstrip()
+                            dest.email = email.text_content().strip()
                         else:
-                            dest.email = email.getnext().text_content().rstrip()
+                            dest.email = email.getnext().text_content().strip()
             #PRODUTOS
             source_code = "".join(pgsrc)
             pattern = r'<div id="[0-9]+"'

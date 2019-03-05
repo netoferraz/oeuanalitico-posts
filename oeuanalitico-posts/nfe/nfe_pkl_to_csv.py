@@ -3,8 +3,10 @@ import pickle
 import argparse
 import time
 import pandas as pd
+from dotenv import load_dotenv
+from goodtables import validate
 from logs.logger import logger_tabular
-from preprocessing.functions import normalize_ncm, get_ncm_values, get_weekday
+from preprocessing.functions import normalize_ncm, get_ncm_values, get_weekday, logging_report, report_pkl_into_csv
 parser = argparse.ArgumentParser(description='Parser de arquivos .pkl e retorna um csv')
 parser.add_argument("pathname", help="Diretório onde estão localizados os arquivos .pkl", type=str)
 parser.add_argument("filename", help="nome que será dado ao arquivo .csv")
@@ -12,6 +14,7 @@ args = parser.parse_args()
 
 
 def pklParserToCsV(pathname, filename):
+    load_dotenv(verbose=True)
     start_time = time.time()
     # list os arquivos para realizar o parser
     path = os.path.join(os.getcwd(), "data-storage/validacao", pathname)
@@ -206,8 +209,44 @@ def pklParserToCsV(pathname, filename):
              'prod_categoria_ncm', 'prod_cfop', 'prod_valor_desconto', 'prod_valor_tributos',
              'prod_codigo_ean_cmc', 'prod_valor_unitario_cmc', 'prod_valor_unitario_trib',
              'prod_unidade_trib']]
+    df['em_cnpj'] = df['em_cnpj'].str.strip()
+    df['em_uf'] = df['em_uf'].str.strip()
+    df['dest_uf'] = df['dest_uf'].str.strip()
     df.to_csv(f"./tabular-data/{args.filename}.csv", sep=';', encoding='latin1')
+    # validate data against schema
+    report = validate(f"./tabular-data/{args.filename}.csv",
+                      schema=os.getenv("TABULAR_SCHEMA"),
+                      row_limit=-1,
+                      skip_checks=['duplicate-row']
+                      )
+
+    is_valid, num_errors = logging_report(report,
+                                         [
+                                            'nf_datetime',
+                                            'nf_dia_semana',
+                                            'nf_chave',
+                                            'nf_numero',
+                                            'nf_modelo',
+                                            'nf_serie',
+                                            'nf_valor',
+                                            'em_cnpj',
+                                            'em_uf',
+                                            'prod_nome',
+                                            'prod_valor',
+                                            'prod_codigo_ncm',
+                                            'prod_cfop',
+                                            'prod_valor_desconto',
+                                            'prod_valor_tributos',
+                                            'prod_codigo_ean_cmc',
+                                            'prod_valor_unitario_cmc',
+                                            'prod_valor_unitario_trib'
+                                         ],
+                                         logger_tabular)
     timeM = round((time.time() - start_time) / 60, 3)
+    if is_valid:
+        report_pkl_into_csv(args.filename, args.pathname, logger_tabular)
+    else:
+        logging_report.debug("Verique os erros de validação e rode o programa novamente.")
     print(f"Tempo de execução foi de {timeM} minutos")
 
 
