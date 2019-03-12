@@ -25,6 +25,9 @@ xlrd = "*"
 openpyxl = "*"
 pyyaml = "*"
 goodtables = "*"
+matplotlib = "*"
+seaborn = "*"
+folium = "*"
 
 [requires]
 python_version = "3.7"
