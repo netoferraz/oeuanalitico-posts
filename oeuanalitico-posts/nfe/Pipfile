@@ -28,6 +28,7 @@ goodtables = "*"
 matplotlib = "*"
 seaborn = "*"
 folium = "*"
+faker = "*"
 
 [requires]
 python_version = "3.7"
