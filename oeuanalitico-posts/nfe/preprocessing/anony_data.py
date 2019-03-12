@@ -1,0 +1,11 @@
+cols = ['nf_datetime', 'nf_dia_semana', 'nf_chave', 'nf_numero', 'nf_modelo',
+       'nf_serie', 'nf_valor', 'em_rz', 'em_nomeFantasia', 'em_cnpj',
+       'em_endereco', 'em_bairro', 'em_cep', 'em_municipio', 'em_telefone',
+       'em_uf', 'em_pais', 'em_inscricao_estadual', 'em_inscricao_municipal',
+       'em_cnae_fiscal', 'dest_rz', 'dest_cpf', 'dest_endereco', 'dest_bairro',
+       'dest_cep', 'dest_municipio', 'dest_telefone', 'dest_uf', 'dest_pais',
+       'dest_inscricao_estadual', 'dest_email', 'prod_nome', 'prod_quantidade',
+       'prod_unidade', 'prod_valor', 'prod_codigo_produto', 'prod_codigo_ncm',
+       'prod_categoria_ncm', 'prod_cfop', 'prod_valor_desconto',
+       'prod_valor_tributos', 'prod_codigo_ean_cmc', 'prod_valor_unitario_cmc',
+       'prod_valor_unitario_trib', 'prod_unidade_trib']
