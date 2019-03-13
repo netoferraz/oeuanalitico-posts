@@ -5,7 +5,6 @@ import random
 import re
 import datetime
 
-
 class InvoiceNumber(BaseProvider):
     """
     Provider for Eletronic Invoicing Number for Consumer (NFC-e)
@@ -28,6 +27,7 @@ class InvoiceNumber(BaseProvider):
     """
     __provider__ = 'invoice'
     __lang__ = "pt_BR"
+
     fake = Factory.create("pt_BR")
     # federation unit codes
     uf_cod = {
