@@ -5,7 +5,6 @@ import random
 import re
 import datetime
 
-
 class InvoiceNumber(BaseProvider):
     """
     Provider for Eletronic Invoicing Number for Consumer (NFC-e)
@@ -28,6 +27,7 @@ class InvoiceNumber(BaseProvider):
     """
     __provider__ = 'invoice'
     __lang__ = "pt_BR"
+
     fake = Factory.create("pt_BR")
     # federation unit codes
     uf_cod = {
@@ -80,10 +80,10 @@ class InvoiceNumber(BaseProvider):
         Keyword Args:
             invoice_no (str): invoice number with 44 digits or its masked version with 59 character length
             start_dt (datetime.datetime): if no invoice_no has been entered, a start datetime is needed to
-            compute a random 04 digits code wich has format YYMM. In case of missing value, an random date
+            compute a random 04 digits code which has format YYMM. In case of missing value, an random date
             of the current year will be used.
             end_dt (datetime.datetime) : if no invoice_no has been entered, an end datetime is needed to
-            compute a random 04 digits code wich has format YYMM. In case of missing value, an random date
+            compute a random 04 digits code which has format YYMM. In case of missing value, an random date
             of the current year will be used.
         """
         invoice_no = kwargs.get('invoice_no')
