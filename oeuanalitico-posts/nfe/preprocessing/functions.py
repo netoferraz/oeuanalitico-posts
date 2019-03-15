@@ -5,6 +5,8 @@ import datetime
 from collections import defaultdict
 from faker import Factory
 import faker
+from preprocessing.nfeProvider import Invoice
+import csv
 
 
 def convert_to_numeric(num):
@@ -199,41 +201,51 @@ def logging_report(report, list_required_fields, logger):
                                     logger.critical(f"{f.name} @ {erro['message']}")
         return False, num_errors
 
-def anonymize_data(path: str):
-    """
-    Path é uma string com o caminho para o arquivo tabular que será anonimizado.
-    """
 
 def anonymize_rows(rows):
     """
     Rows is an iterable of dictionaries that contain name and
     email fields that need to be anonymized.
-
-'nf_datetime', 'nf_dia_semana', 'nf_chave', 'nf_numero', 'nf_modelo',
-       'nf_serie', 'nf_valor', 'em_rz', 'em_nomeFantasia', 'em_cnpj',
-       'em_endereco', 'em_bairro', 'em_cep', 'em_municipio', 'em_telefone',
-       'em_uf', 'em_pais', 'em_inscricao_estadual', 'em_inscricao_municipal',
-       'em_cnae_fiscal', 'dest_rz', 'dest_cpf', 'dest_endereco', 'dest_bairro',
-       'dest_cep', 'dest_municipio', 'dest_telefone', 'dest_uf', 'dest_pais',
-       'dest_inscricao_estadual', 'dest_email', 'prod_nome', 'prod_quantidade',
-       'prod_unidade', 'prod_valor', 'prod_codigo_produto', 'prod_codigo_ncm',
-       'prod_categoria_ncm', 'prod_cfop', 'prod_valor_desconto',
-       'prod_valor_tributos', 'prod_codigo_ean_cmc', 'prod_valor_unitario_cmc',
-       'prod_valor_unitario_trib', 'prod_unidade_trib']    
     """
     # Load the faker and its providers
-    faker  = Factory.create("pt_BR")
+    faker = Factory.create("pt_BR")
+    faker.add_provider(Invoice)
 
     # Create mappings of names & emails to faked names & emails.
-    names  = defaultdict(faker.name)
-    emails = defaultdict(faker.email)
+    # https://stackoverflow.com/questions/18066837/passing-a-parameter-to-objects-created-by-defaultdict
+    nfecod = defaultdict(lambda: faker.nfce(**{'uf_code': 'DF'}))
+    cpf = defaultdict(faker.cpf)
+    nome = defaultdict(faker.name)
+    endereco = defaultdict(faker.address)
+    bairro = defaultdict(faker.bairro)
 
     # Iterate over the rows and yield anonymized rows.
     for row in rows:
         # Replace the name and email fields with faked fields.
-        row['dest_rz']  = names[row['name']]
-        row['dest_email'] = emails[row['email']]
+        row['nf_chave'] = nfecod[row['nf_chave']]
+        row['dest_cpf'] = cpf[row['dest_cpf']]
+        row['dest_rz'] = nome[row['dest_rz']]
+        row['dest_endereco'] = endereco[row['dest_endereco']]
+        row['dest_bairro'] = bairro[row['dest_bairro']]
 
         # Yield the row back to the caller
         yield row
-    
+
+
+def anonymize(source, target):
+    """
+    The source argument is a path to a CSV file containing data to anonymize,
+    while target is a path to write the anonymized CSV data to.
+    """
+    # https://pymotw.com/2/csv/
+    csv.register_dialect('semicolon', delimiter=';')
+    with open(source, 'r') as f:
+        with open(target, 'w') as o:
+            # Use the DictReader to easily extract fields
+            reader = csv.DictReader(f, dialect='semicolon')
+            writer = csv.DictWriter(o, reader.fieldnames, dialect='semicolon')
+            # write col names
+            writer.writeheader()
+            # Read and anonymize data, writing to target file.
+            for row in anonymize_rows(reader):
+                writer.writerow(row)

@@ -6,7 +6,7 @@ import re
 import datetime
 
 
-class InvoiceNumber(BaseProvider):
+class Invoice(BaseProvider):
     """
     Provider for Eletronic Invoicing Number for Consumer (NFC-e)
     https://www.edicomgroup.com/en_US/news/5891-electronic-invoicing-in-brazil-nf-e-nfs-e-and-ct-e.html
@@ -88,58 +88,39 @@ class InvoiceNumber(BaseProvider):
         Return a 59 character identifier for NFC-e with mask
 
         Keyword Args:
-            invoice_no (str): invoice number with 44 digits or its masked version with 59 character length
             start_dt (datetime.datetime): if no invoice_no has been entered, a start datetime is needed to
             compute a random 04 digits code which has format YYMM. In case of missing value, an random date of the current year will be used.
             end_dt (datetime.datetime): if no invoice_no has been entered, an end datetime is needed to
             compute a random 04 digits code which has format YYMM. In case of missing value, an random datevof the current year will be used.
             uf_code(str): a common two letter abbreviation for brazilian states (http://www.brazil-help.com/brazilian_states.htm)
         """
-        invoice_no = kwargs.get('invoice_no')
-        if invoice_no:
-            if not isinstance(invoice_cod, str):
-                raise TypeError("Convert invoice code to string type")
-            else:
-                validate_invoice = invoice_cod.isdigit()
-                if validate_invoice:
-                    assert len(invoice_cod) == 44, "Invalid length of invoice code."
-                else:
-                    pattern = r'[0-9]{2}-[0-9]{4}-[0-9]{2}\.[0-9]{3}\.[0-9]{3}\/[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{3}-[0-9]{3}.[0-9]{3}\.[0-9]{3}'\
-                              r'-[0-9]{3}.[0-9]{3}\.[0-9]{3}-[0-9]{1}'
-                    regex = re.compile(pattern)
-                    check_pattern = regex.match(invoice_cod)
-                    if check_pattern:
-                        pass
-                    else:
-                        raise ValueError("The invoice code does not match the validation.")
+        start_dt = kwargs.get('start_dt')
+        end_dt = kwargs.get('end_dt')
+        if start_dt and end_dt:
+            [self.validate_dtype(variable, datetime.datetime, "The date must be a datetime.datetime object.") for variable in [start_dt, end_dt]]
+            picked_date = self.fake.date_between_dates(date_start=start_dt, date_end=end_dt)
+            dt_code = self.parse_date(picked_date)  # 2 digits code (YYMM)
         else:
-            start_dt = kwargs.get('start_dt')
-            end_dt = kwargs.get('end_dt')
-            if start_dt and end_dt:
-                [self.validate_dtype(variable, datetime.datetime, "The date must be a datetime.datetime object.") for variable in [start_dt, end_dt]]
-                picked_date = self.fake.date_between_dates(date_start=start_dt, date_end=end_dt)
-                dt_code = self.parse_date(picked_date)  # 2 digits code (YYMM)
-            else:
-                picked_date = self.fake.date_time_this_year()
-                dt_code = self.parse_date(picked_date)  # 2 digits code (YYMM)
-            # federation unit code
-            uf_choice = kwargs.get('uf_code')
-            if uf_choice:
-                try:
-                    get_uf_cod = self.uf_cod_map[uf_choice]
-                except KeyError:
-                    raise KeyError("Invalid abbreviation for Brazilian State.")
-            else:
-                get_uf_cod = random.choice([cod for cod in self.uf_cod_map.values()])
-            # CNPJ
-            cnpj = str(self.fake.cnpj()).replace(".", "").replace("/", "").replace("-", "")
-            nfce_cod = f"{get_uf_cod}{dt_code}{cnpj}"
-            last_digits = "".join([random.choice(string.digits) for n in range(24)])
-            cod_digits = nfce_cod + last_digits
-            nfce_cod = f"{cod_digits[:2]}-{cod_digits[2:6]}-{cod_digits[6:8]}.{cod_digits[8:11]}.{cod_digits[11:14]}/{cod_digits[14:18]}-{cod_digits[18:20]}"\
-                f"-{cod_digits[20:22]}-{cod_digits[22:25]}-{cod_digits[25:28]}.{cod_digits[28:31]}.{cod_digits[31:34]}-{cod_digits[34:37]}.{cod_digits[37:40]}."\
-                f"{cod_digits[40:43]}-{cod_digits[43]}"
-            return nfce_cod
+            picked_date = self.fake.date_time_this_year()
+            dt_code = self.parse_date(picked_date)  # 2 digits code (YYMM)
+        # federation unit code
+        uf_choice = kwargs.get('uf_code')
+        if uf_choice:
+            try:
+                get_uf_cod = self.uf_cod_map[uf_choice]
+            except KeyError:
+                raise KeyError("Invalid abbreviation for Brazilian State.")
+        else:
+            get_uf_cod = random.choice([cod for cod in self.uf_cod_map.values()])
+        # CNPJ
+        cnpj = str(self.fake.cnpj()).replace(".", "").replace("/", "").replace("-", "")
+        nfce_cod = f"{get_uf_cod}{dt_code}{cnpj}"
+        last_digits = "".join([random.choice(string.digits) for n in range(24)])
+        cod_digits = nfce_cod + last_digits
+        nfce_cod = f"{cod_digits[:2]}-{cod_digits[2:6]}-{cod_digits[6:8]}.{cod_digits[8:11]}.{cod_digits[11:14]}/{cod_digits[14:18]}-{cod_digits[18:20]}"\
+            f"-{cod_digits[20:22]}-{cod_digits[22:25]}-{cod_digits[25:28]}.{cod_digits[28:31]}.{cod_digits[31:34]}-{cod_digits[34:37]}.{cod_digits[37:40]}."\
+            f"{cod_digits[40:43]}-{cod_digits[43]}"
+        return nfce_cod
 
     def nfce_code(self, **kwargs) -> str:
         """
@@ -155,14 +136,3 @@ class InvoiceNumber(BaseProvider):
         code = self.nfce(**kwargs)
         code = code.replace("-", "").replace(".", "").replace("/", "")
         return code
-
-
-data = Factory.create()
-data.add_provider(InvoiceNumber)
-print(data.nfce())
-for i in range(5):
-    print(data.nfce(**{'start_dt': datetime.datetime(2005, 1, 1), 'end_dt': datetime.datetime(2019, 1, 31), "uf_code": "DF"}))
-    print(data.nfce_code(**{'start_dt': datetime.datetime(2005, 1, 1), 'end_dt': datetime.datetime(2019, 1, 31)}))
-
-# this code wil crash
-print(data.nfce(**{'start_dt': "2005-1-1", 'end_dt': datetime.datetime(2019, 1, 31)}))
