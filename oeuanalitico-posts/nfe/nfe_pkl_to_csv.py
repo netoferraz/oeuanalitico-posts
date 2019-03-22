@@ -6,7 +6,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from goodtables import validate
 from logs.logger import logger_tabular
-from preprocessing.functions import normalize_ncm, get_ncm_values, get_weekday, logging_report, report_pkl_into_csv
+from preprocessing.functions import normalize_ncm, get_ncm_values, get_weekday, logging_report, report_pkl_into_csv, subseting_data
 parser = argparse.ArgumentParser(description='Parser de arquivos .pkl e retorna um csv')
 parser.add_argument("pathname", help="Diretório onde estão localizados os arquivos .pkl", type=str)
 parser.add_argument("filename", help="nome que será dado ao arquivo .csv")
@@ -212,6 +212,7 @@ def pklParserToCsV(pathname, filename):
     df['em_cnpj'] = df['em_cnpj'].str.strip()
     df['em_uf'] = df['em_uf'].str.strip()
     df['dest_uf'] = df['dest_uf'].str.strip()
+    subseting_data(df, args.filename)
     df.to_csv(f"./tabular-data/{args.filename}.csv", sep=';', encoding='latin1')
     # validate data against schema
     report = validate(f"./tabular-data/{args.filename}.csv",
